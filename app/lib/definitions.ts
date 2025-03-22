@@ -1,88 +1,132 @@
 // This file contains type definitions for your data.
 // It describes the shape of the data, and what data type each property should accept.
-// For simplicity of teaching, we're manually defining these types.
-// However, these types are generated automatically if you're using an ORM such as Prisma.
+
 export type User = {
-  id: string;
+  id: number;
   name: string;
-  email: string;
-  password: string;
 };
 
-export type Customer = {
-  id: string;
+export type Team = {
+  id: number;
   name: string;
-  email: string;
-  image_url: string;
+  colour: string;
+  car_image: string;
 };
 
-export type Invoice = {
-  id: string;
-  customer_id: string;
-  amount: number;
+export type Driver = {
+  id: number;
+  broadcast_name: string;
+  country_code: string | null;
+  first_name: string;
+  full_name: string;
+  headshot_url: string;
+  last_name: string;
+  driver_number: number;
+  team_id: number;
+  name_acronym: string;
+};
+
+export type PredictionGroup = {
+  id: number;
+  name: string;
+  group_type: 'SEASON' | 'RACE';
+  prediction_deadline: string | null;
+};
+
+export type PredictionGroupItem = {
+  id: number;
+  prediction_group_id: number;
+  name: string;
+  selection_type:
+    | 'DRIVER_UNIQUE'
+    | 'TEAM_UNIQUE'
+    | 'DRIVER_MULTIPLE'
+    | 'TEAM_MULTIPLE'
+    | 'POSITION';
+};
+
+export type PointsDefinition = {
+  id: number;
+  prediction_group_id: number;
+  type: 'EXACT' | 'ANY_IN_ITEMS' | 'RESULTS_INCLUDES';
+  points: number;
+};
+
+export type PointsException = {
+  id: number;
+  points_definition_id: number;
+  driver_id: number | null;
+  team_id: number | null;
+  points: number;
+};
+
+export type Event = {
+  id: number;
+  name: string;
+  track: string;
   date: string;
-  // In TypeScript, this is called a string union type.
-  // It means that the "status" property can only be one of the two strings: 'pending' or 'paid'.
-  status: 'pending' | 'paid';
+  has_sprint_race: boolean;
+  status: 'NOT_STARTED';
+  track_image: string;
 };
 
-export type Revenue = {
-  month: string;
-  revenue: number;
+export type EventResult = {
+  id: number;
+  event_id: number;
+  driver_id: number;
+  team_id: number | null;
+  position: number | null;
+  prediction_group_item_id: number;
 };
 
-export type LatestInvoice = {
-  id: string;
+export type EventResultDetailed = EventResult & {
+  pridiction_name: string;
+  driver_name: string;
+  driver_acronym: string;
+  driver_headshot_url: string;
+  team_name: string;
+  team_image_url: string;
+  position: number | null;
+};
+
+export type SeasonResult = {
+  id: number;
+  prediction_group_item_id: number;
+  driver_id: number | null;
+  team_id: number | null;
+  position: number | null;
+};
+
+export type UserPrediction = {
+  id: number;
+  user_id: number;
+  prediction_group_item_id: number;
+  event_id: number | null;
+  driver_id: number | null;
+  team_id: number | null;
+  position: number | null;
+  finished: boolean;
+  points: number;
+  updated_at: string | null;
+};
+
+export type Leaderboard = {
+  id: number;
   name: string;
-  image_url: string;
-  email: string;
-  amount: string;
+  points: number;
+  position: number;
+  profile_image_url: string;
 };
 
-// The database returns a number for amount, but we later format it to a string with the formatCurrency function
-export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
-  amount: number;
-};
-
-export type InvoicesTable = {
-  id: string;
-  customer_id: string;
-  name: string;
-  email: string;
-  image_url: string;
-  date: string;
-  amount: number;
-  status: 'pending' | 'paid';
-};
-
-export type CustomersTableType = {
-  id: string;
-  name: string;
-  email: string;
-  image_url: string;
-  total_invoices: number;
-  total_pending: number;
-  total_paid: number;
-};
-
-export type FormattedCustomersTable = {
-  id: string;
-  name: string;
-  email: string;
-  image_url: string;
-  total_invoices: number;
-  total_pending: string;
-  total_paid: string;
-};
-
-export type CustomerField = {
-  id: string;
-  name: string;
-};
-
-export type InvoiceForm = {
-  id: string;
-  customer_id: string;
-  amount: number;
-  status: 'pending' | 'paid';
+export type SeasonPredictionsConfig = {
+  id: number;
+  group_name: string;
+  prediction_deadline: string;
+  prediction_name: string;
+  selection_type:
+    | 'DRIVER_UNIQUE'
+    | 'TEAM_UNIQUE'
+    | 'DRIVER_MULTIPLE'
+    | 'TEAM_MULTIPLE'
+    | 'POSITION';
 };

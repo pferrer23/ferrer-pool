@@ -2,17 +2,181 @@
 @tailwind components;
 @tailwind utilities;
 
-input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
+:root {
+  /* Primary - Blue */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+
+  /* Background colors */
+  --background-50: #f8fafc;
+  --background-100: #f1f5f9;
+  --background-200: #e2e8f0;
+  --background-300: #cbd5e1;
+  --background-400: #94a3b8;
+  --background-500: #64748b;
+  --background-600: #475569;
+  --background-700: #334155;
+  --background-800: #1e293b;
+  --background-900: #0f172a;
+  --background-950: #020617;
+
+  /* Secondary */
+  --secondary-50: #e3e3e3;
+  --secondary-100: #bbbbbb;
+  --secondary-200: #939393;
+  --secondary-300: #6b6b6b;
+  --secondary-400: #444444;
+  --secondary-500: #1c1c1c;
+  --secondary-600: #171717;
+  --secondary-700: #121212;
+  --secondary-800: #0d0d0d;
+  --secondary-900: #080808;
+  --secondary-foreground: #fff;
+
+  /* Gray */
+  --gray-50: #fbfafc;
+  --gray-100: #e8e8e8;
+  --gray-200: #e2e2e2;
+  --gray-300: #bcbcbc;
+  --gray-400: #9391a1;
+  --gray-500: #747184;
+  --gray-600: #615e6e;
+  --gray-700: #4e4b58;
+  --gray-800: #2e2c34;
+  --gray-900: #1d1c21;
+
+  /* Red */
+  --red-50: #f1dfdf;
+  --red-100: #dcb3b3;
+  --red-200: #c88686;
+  --red-300: #b45959;
+  --red-400: #9f2d2d;
+  --red-500: #8b0000;
+  --red-600: #730000;
+  --red-700: #5a0000;
+  --red-800: #420000;
+  --red-900: #2a0000;
+  --red-foreground: #fff;
+  --red-DEFAULT: #8b0000;
+
+  /* Orange */
+  --orange-900: #4d2900;
+  --orange-800: #794000;
+  --orange-700: #a65800;
+  --orange-600: #d26f00;
+  --orange-500: #ff8700;
+  --orange-400: #ff9c2d;
+  --orange-300: #ffb159;
+  --orange-200: #ffc686;
+  --orange-100: #ffdbb3;
+  --orange-50: #fff0df;
+
+  /* Yellow */
+  --yellow-900: #453112;
+  --yellow-800: #5e3b13;
+  --yellow-700: #784b10;
+  --yellow-600: #8b580a;
+  --yellow-500: #c27803;
+  --yellow-400: #e3a008;
+  --yellow-300: #faca15;
+  --yellow-200: #fce96a;
+  --yellow-100: #fdf6b2;
+  --yellow-50: #fdfdea;
+
+  /* Green */
+  --green-900: #00211d;
+  --green-800: #00352f;
+  --green-700: #004840;
+  --green-600: #005c51;
+  --green-500: #006f62;
+  --green-400: #2d887d;
+  --green-300: #59a199;
+  --green-200: #86bbb4;
+  --green-100: #b3d4d0;
+  --green-50: #dfedeb;
+  --green-foreground: #fff;
+  --green-DEFAULT: #006f62;
+
+  /* Teal */
+  --teal-900: #014451;
+  --teal-800: #05505c;
+  --teal-700: #036672;
+  --teal-600: #047481;
+  --teal-500: #0694a2;
+  --teal-400: #16bdca;
+  --teal-300: #7edce2;
+  --teal-200: #afecef;
+  --teal-100: #d5f5f6;
+  --teal-50: #edfafa;
+
+  /* Indigo */
+  --indigo-900: #362f78;
+  --indigo-800: #42389d;
+  --indigo-700: #5145cd;
+  --indigo-600: #5542f6;
+  --indigo-500: #6875f5;
+  --indigo-400: #8da2fb;
+  --indigo-300: #b4c6fc;
+  --indigo-200: #cddbfe;
+  --indigo-100: #e5edff;
+  --indigo-50: #f0f5ff;
+
+  /* Purple */
+  --purple-900: #4a1d96;
+  --purple-800: #5521b5;
+  --purple-700: #6c2bd9;
+  --purple-600: #7e3af2;
+  --purple-500: #9061f9;
+  --purple-400: #ac94fa;
+  --purple-300: #cabffd;
+  --purple-200: #dcd7fe;
+  --purple-100: #edebfe;
+  --purple-50: #f6f5ff;
+
+  /* Pink */
+  --pink-900: #751a3d;
+  --pink-800: #99154b;
+  --pink-700: #bf125d;
+  --pink-600: #d61f69;
+  --pink-500: #e74694;
+  --pink-400: #f17eb8;
+  --pink-300: #f8b4d9;
+  --pink-200: #fad1e8;
+  --pink-100: #fce8f3;
+  --pink-50: #fdf2f8;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 24px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 60px;
+  --text-7xl: 72px;
+  --text-8xl: 96px;
+  --text-9xl: 128px;
+  /* Keep existing variables but maybe update them to use your new colors */
+  --background: var(--background-950);
+  --foreground: var(--background-100);
 }
 
-input[type='number']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+body,
+html {
+  color: var(--foreground);
+  background: var(--background);
+  height: 100%;
+  width: 100%;
+  padding: 0;
   margin: 0;
 }

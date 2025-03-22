@@ -15,9 +15,9 @@ import {
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-async function seedUsers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
+async function seedUsers(transaction: any) {
+  await transaction`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  await transaction`
     CREATE TABLE IF NOT EXISTS users (
       id INT PRIMARY KEY,
       name VARCHAR(255) NOT NULL
@@ -26,7 +26,7 @@ async function seedUsers() {
 
   const insertedUsers = await Promise.all(
     users.map(
-      (user) => sql`
+      (user) => transaction`
       INSERT INTO users (id, name)
       VALUES (${user.id}, ${user.name})
       ON CONFLICT (id) DO NOTHING;
@@ -37,8 +37,8 @@ async function seedUsers() {
   return insertedUsers;
 }
 
-async function seedTeams() {
-  await sql`
+async function seedTeams(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS teams (
       id INT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -49,7 +49,7 @@ async function seedTeams() {
 
   const insertedTeams = await Promise.all(
     teams.map(
-      (team) => sql`
+      (team) => transaction`
       INSERT INTO teams (id, name, colour, car_image)
       VALUES (${team.id}, ${team.name}, ${team.colour}, ${team.car_image})
       ON CONFLICT (id) DO NOTHING;
@@ -60,8 +60,8 @@ async function seedTeams() {
   return insertedTeams;
 }
 
-async function seedDrivers() {
-  await sql`
+async function seedDrivers(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS drivers (
       id INT PRIMARY KEY,
       broadcast_name VARCHAR(255) NOT NULL,
@@ -78,7 +78,7 @@ async function seedDrivers() {
 
   const insertedDrivers = await Promise.all(
     drivers.map(
-      (driver) => sql`
+      (driver) => transaction`
       INSERT INTO drivers (
         id,
         broadcast_name,
@@ -111,8 +111,8 @@ async function seedDrivers() {
   return insertedDrivers;
 }
 
-async function seedPredictionGroups() {
-  await sql`
+async function seedPredictionGroups(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS prediction_groups (
       id INT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -123,7 +123,7 @@ async function seedPredictionGroups() {
 
   const insertedPredictionGroups = await Promise.all(
     prediction_groups.map(
-      (group) => sql`
+      (group) => transaction`
       INSERT INTO prediction_groups (id, name, group_type, prediction_deadline)
       VALUES (${group.id}, ${group.name}, ${group.group_type}, ${group.prediction_deadline})
       ON CONFLICT (id) DO NOTHING;
@@ -134,8 +134,8 @@ async function seedPredictionGroups() {
   return insertedPredictionGroups;
 }
 
-async function seedPredictionGroupItems() {
-  await sql`
+async function seedPredictionGroupItems(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS prediction_group_items (
       id INT PRIMARY KEY,
       prediction_group_id INT REFERENCES prediction_groups(id),
@@ -146,7 +146,7 @@ async function seedPredictionGroupItems() {
 
   const insertedPredictionGroupItems = await Promise.all(
     prediction_group_items.map(
-      (item) => sql`
+      (item) => transaction`
       INSERT INTO prediction_group_items (id, prediction_group_id, name, selection_type)
       VALUES (${item.id}, ${item.prediction_group_id}, ${item.name}, ${item.selection_type})
       ON CONFLICT (id) DO NOTHING;
@@ -157,8 +157,8 @@ async function seedPredictionGroupItems() {
   return insertedPredictionGroupItems;
 }
 
-async function seedPointsDefinitions() {
-  await sql`
+async function seedPointsDefinitions(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS points_definitions (
       id INT PRIMARY KEY,
       prediction_group_id INT REFERENCES prediction_groups(id),
@@ -169,7 +169,7 @@ async function seedPointsDefinitions() {
 
   const insertedPointsDefinitions = await Promise.all(
     points_definitions.map(
-      (def) => sql`
+      (def) => transaction`
       INSERT INTO points_definitions (id, prediction_group_id, type, points)
       VALUES (${def.id}, ${def.prediction_group_id}, ${def.type}, ${def.points})
       ON CONFLICT (id) DO NOTHING;
@@ -180,8 +180,8 @@ async function seedPointsDefinitions() {
   return insertedPointsDefinitions;
 }
 
-async function seedPointsExceptions() {
-  await sql`
+async function seedPointsExceptions(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS points_exceptions (
       id INT PRIMARY KEY,
       points_definition_id INT REFERENCES points_definitions(id),
@@ -193,7 +193,7 @@ async function seedPointsExceptions() {
 
   const insertedPointsExceptions = await Promise.all(
     points_exceptions.map(
-      (exception) => sql`
+      (exception) => transaction`
       INSERT INTO points_exceptions (id, points_definition_id, driver_id, team_id, points)
       VALUES (${exception.id}, ${exception.points_definition_id}, ${exception.driver_id}, ${exception.team_id}, ${exception.points})
       ON CONFLICT (id) DO NOTHING;
@@ -204,8 +204,8 @@ async function seedPointsExceptions() {
   return insertedPointsExceptions;
 }
 
-async function seedEvents() {
-  await sql`
+async function seedEvents(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS events (
       id INT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -219,7 +219,7 @@ async function seedEvents() {
 
   const insertedEvents = await Promise.all(
     events.map(
-      (event) => sql`
+      (event) => transaction`
       INSERT INTO events (id, name, track, date, has_sprint_race, status, track_image)
       VALUES (${event.id}, ${event.name}, ${event.track}, ${event.date}, ${event.has_sprint_race}, ${event.status}, ${event.track_image})
       ON CONFLICT (id) DO NOTHING;
@@ -230,8 +230,8 @@ async function seedEvents() {
   return insertedEvents;
 }
 
-async function seedEventResults() {
-  await sql`
+async function seedEventResults(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS event_results (
       id INT PRIMARY KEY,
       event_id INT REFERENCES events(id),
@@ -244,7 +244,7 @@ async function seedEventResults() {
 
   const insertedEventResults = await Promise.all(
     event_results.map(
-      (result) => sql`
+      (result) => transaction`
       INSERT INTO event_results (id, event_id, driver_id, team_id, position, prediction_group_item_id)
       VALUES (${result.id}, ${result.event_id}, ${result.driver_id}, ${result.team_id}, ${result.position}, ${result.prediction_group_item_id})
       ON CONFLICT (id) DO NOTHING;
@@ -255,8 +255,8 @@ async function seedEventResults() {
   return insertedEventResults;
 }
 
-async function seedSeasonResults() {
-  await sql`
+async function seedSeasonResults(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS season_results (
       id INT PRIMARY KEY,
       driver_id INT REFERENCES drivers(id),
@@ -268,7 +268,7 @@ async function seedSeasonResults() {
 
   const insertedSeasonResults = await Promise.all(
     season_results.map(
-      (result) => sql`
+      (result) => transaction`
       INSERT INTO season_results (id, driver_id, team_id, position, prediction_group_item_id)
       VALUES (${result.id}, ${result.driver_id}, ${result.team_id}, ${result.position}, ${result.prediction_group_item_id})
       ON CONFLICT (id) DO NOTHING;
@@ -279,8 +279,8 @@ async function seedSeasonResults() {
   return insertedSeasonResults;
 }
 
-async function seedUserPredictions() {
-  await sql`
+async function seedUserPredictions(transaction: any) {
+  await transaction`
     CREATE TABLE IF NOT EXISTS user_predictions (
       id INT PRIMARY KEY,
       user_id INT REFERENCES users(id),
@@ -297,7 +297,7 @@ async function seedUserPredictions() {
 
   const insertedUserPredictions = await Promise.all(
     user_predictions.map(
-      (prediction) => sql`
+      (prediction) => transaction`
       INSERT INTO user_predictions (id, user_id, event_id, prediction_group_item_id, driver_id, team_id, position, finished, points, updated_at)
       VALUES (${prediction.id}, ${prediction.user_id}, ${prediction.event_id}, ${prediction.prediction_group_item_id}, ${prediction.driver_id}, ${prediction.team_id}, ${prediction.position}, ${prediction.finished}, ${prediction.points}, ${prediction.updated_at})
       ON CONFLICT (id) DO NOTHING;
@@ -310,18 +310,18 @@ async function seedUserPredictions() {
 
 export async function GET() {
   try {
-    await sql.begin(async (sql) => {
-      await seedUsers();
-      await seedTeams();
-      await seedDrivers();
-      await seedPredictionGroups();
-      await seedPredictionGroupItems();
-      await seedPointsDefinitions();
-      await seedPointsExceptions();
-      await seedEvents();
-      await seedEventResults();
-      await seedSeasonResults();
-      await seedUserPredictions();
+    await sql.begin(async (transaction) => {
+      await seedUsers(transaction);
+      await seedTeams(transaction);
+      await seedDrivers(transaction);
+      await seedPredictionGroups(transaction);
+      await seedPredictionGroupItems(transaction);
+      await seedPointsDefinitions(transaction);
+      await seedPointsExceptions(transaction);
+      await seedEvents(transaction);
+      await seedEventResults(transaction);
+      await seedSeasonResults(transaction);
+      await seedUserPredictions(transaction);
     });
 
     return Response.json({ message: 'Database seeded successfully' });
