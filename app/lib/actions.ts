@@ -9,7 +9,7 @@ export type State = {
 };
 
 // save season user predictions
-export async function saveSeasonUserPredictions(
+export async function saveUserPredictions(
   userId: number,
   predictions: UserPrediction[]
 ) {
@@ -17,6 +17,7 @@ export async function saveSeasonUserPredictions(
     await sql`
     INSERT INTO user_predictions (
       user_id,
+      event_id,
       prediction_group_item_id,
       driver_id,
       team_id,
@@ -27,6 +28,7 @@ export async function saveSeasonUserPredictions(
         (p) =>
           [
             userId,
+            p.event_id ?? null,
             p.prediction_group_item_id,
             p.driver_id ?? null,
             p.team_id ?? null,
@@ -34,7 +36,7 @@ export async function saveSeasonUserPredictions(
           ] as const
       )
     )}
-    ON CONFLICT (user_id, prediction_group_item_id) 
+    ON CONFLICT (user_id, prediction_group_item_id, COALESCE(event_id, -1))
     DO UPDATE SET
       driver_id = EXCLUDED.driver_id,
       team_id = EXCLUDED.team_id, 

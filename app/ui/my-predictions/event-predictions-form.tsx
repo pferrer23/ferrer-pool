@@ -17,7 +17,7 @@ import {
   Input,
   Button,
 } from '@heroui/react';
-// import { saveEventUserPredictions } from '@/app/lib/actions';
+import { saveUserPredictions } from '@/app/lib/actions';
 
 interface EventPredictionsFormProps {
   predictions: EventsWithPredictionsConfig[];
@@ -38,7 +38,7 @@ export default function EventPredictionsForm({
     e.preventDefault();
     // Handle form submission
     console.log(formData);
-    // saveSeasonUserPredictions(userId!, formData);
+    saveUserPredictions(userId!, formData);
   };
 
   const handleChange = (

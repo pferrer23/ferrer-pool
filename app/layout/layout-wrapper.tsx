@@ -21,7 +21,7 @@ export default function LayoutWrapper({
       <SideNav />
       <div className='flex flex-col flex-1 overflow-hidden'>
         <Header />
-        <main className='flex-1 overflow-y-auto p-4 md:p-6 mb-[60px] md:mb-0'>
+        <main className='flex-1 overflow-y-auto p-2 md:p-4 mb-[60px] md:mb-0'>
           {children}
         </main>
       </div>

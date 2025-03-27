@@ -16,7 +16,7 @@ import {
   UserPrediction,
 } from '@/app/lib/definitions';
 import { useSession } from 'next-auth/react';
-import { saveSeasonUserPredictions } from '@/app/lib/actions';
+import { saveUserPredictions } from '@/app/lib/actions';
 
 interface SeasonPredictionsFormProps {
   predictions: SeasonPredictionsConfig[];
@@ -40,7 +40,7 @@ export default function SeasonPredictionsForm({
     e.preventDefault();
     // Handle form submission
     console.log(formData);
-    saveSeasonUserPredictions(userId!, formData);
+    saveUserPredictions(userId!, formData);
   };
 
   const handleChange = (
