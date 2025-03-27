@@ -14,6 +14,7 @@ import {
   Leaderboard,
   SeasonPredictionsConfig,
   EventResultDetailed,
+  EventPredictionsConfig,
 } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -121,5 +122,51 @@ export async function fetchSeasonPredictionsConfig() {
   where
     group_type = 'SEASON'
   `;
+  return data;
+}
+
+//season user predictions
+export async function fetchSeasonUserPredictions(userId: number) {
+  const data = await sql<
+    UserPrediction[]
+  >`select * from user_predictions where user_id = ${userId}`;
+  return data;
+}
+
+// last events
+export async function fetchEventPredictionsConfig() {
+  const events = await sql<Event[]>`select
+    *
+  from
+    events
+  where
+    date > CURRENT_DATE
+  order by
+    date asc`;
+
+  const predictions_config = await sql<EventPredictionsConfig[]>`
+    select
+      pgi.id,
+      pg."name" group_name,
+      pg.prediction_deadline,
+      pgi.name prediction_name,
+      pgi.selection_type
+    from
+      prediction_groups pg
+    inner join prediction_group_items pgi on
+      pg.id = pgi.prediction_group_id
+    where
+      group_type = 'RACE'
+  `;
+
+  const data = await Promise.all(
+    events.map(async (event) => {
+      return {
+        ...event,
+        predictions_config,
+      };
+    })
+  );
+
   return data;
 }

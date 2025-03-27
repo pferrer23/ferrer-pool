@@ -98,7 +98,7 @@ export type SeasonResult = {
 };
 
 export type UserPrediction = {
-  id: number;
+  id?: number;
   user_id: number;
   prediction_group_item_id: number;
   event_id: number | null;
@@ -129,4 +129,21 @@ export type SeasonPredictionsConfig = {
     | 'DRIVER_MULTIPLE'
     | 'TEAM_MULTIPLE'
     | 'POSITION';
+};
+
+export type EventPredictionsConfig = {
+  id: number;
+  name: string;
+  prediction_deadline: string;
+  prediction_name: string;
+  selection_type:
+    | 'DRIVER_UNIQUE'
+    | 'TEAM_UNIQUE'
+    | 'DRIVER_MULTIPLE'
+    | 'TEAM_MULTIPLE'
+    | 'POSITION';
+};
+
+export type EventsWithPredictionsConfig = Event & {
+  predictions_config: EventPredictionsConfig[];
 };

@@ -77,7 +77,7 @@ export default function SideNav() {
       </aside>
 
       {/* Mobile bottom navigation */}
-      <nav className='md:hidden fixed bottom-0 left-0 right-0 bg-background-900 border-t border-background-800'>
+      <nav className='md:hidden fixed bottom-0 left-0 right-0 bg-background-900 border-t border-background-800 z-50'>
         <div className='flex justify-around px-2 py-3'>
           {menuItems.map((menuItem) => (
             <Link

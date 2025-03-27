@@ -1,4 +1,5 @@
 import SeasonPredictions from '@/app/ui/my-predictions/season-predictions';
+import EventPredictions from '@/app/ui/my-predictions/event-predictions';
 
 export default function MyPredictionsPage() {
   return (
@@ -8,15 +9,15 @@ export default function MyPredictionsPage() {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         <section>
           <h2 className='text-2xl font-bold mb-4'>Season Predictions</h2>
-          <div className='bg-background-900 rounded-lg p-6'>
+          <div className=''>
             <SeasonPredictions />
           </div>
         </section>
 
         <section>
           <h2 className='text-2xl font-bold mb-4'>Event Predictions</h2>
-          <div className='bg-background-900 rounded-lg p-6'>
-            {/* Event predictions content will go here */}
+          <div className=''>
+            <EventPredictions />
           </div>
         </section>
       </div>

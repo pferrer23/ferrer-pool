@@ -2,49 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Select,
-  SelectItem,
-  Input,
-  Button,
-  Accordion,
-  AccordionItem,
-} from '@heroui/react';
-import {
-  SeasonPredictionsConfig,
+  EventsWithPredictionsConfig,
+  EventPredictionsConfig,
   Driver,
   Team,
   UserPrediction,
 } from '@/app/lib/definitions';
 import { useSession } from 'next-auth/react';
-import { saveSeasonUserPredictions } from '@/app/lib/actions';
+import {
+  Accordion,
+  AccordionItem,
+  Select,
+  SelectItem,
+  Input,
+  Button,
+} from '@heroui/react';
+// import { saveEventUserPredictions } from '@/app/lib/actions';
 
-interface SeasonPredictionsFormProps {
-  predictions: SeasonPredictionsConfig[];
+interface EventPredictionsFormProps {
+  predictions: EventsWithPredictionsConfig[];
   drivers: Driver[];
   teams: Team[];
-  userPredictions: UserPrediction[];
 }
 
-export default function SeasonPredictionsForm({
+export default function EventPredictionsForm({
   predictions,
   drivers,
   teams,
-  userPredictions,
-}: SeasonPredictionsFormProps) {
+}: EventPredictionsFormProps) {
+  const [formData, setFormData] = useState<UserPrediction[]>([]);
   const session = useSession();
   const userId = session?.data?.user?.id;
-
-  const [formData, setFormData] = useState<UserPrediction[]>(userPredictions);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission
     console.log(formData);
-    saveSeasonUserPredictions(userId!, formData);
+    // saveSeasonUserPredictions(userId!, formData);
   };
 
   const handleChange = (
-    prediction: SeasonPredictionsConfig,
+    prediction: EventPredictionsConfig,
+    eventId: number,
     value: string | number
   ) => {
     const existingPrediction = formData.find(
@@ -55,6 +54,7 @@ export default function SeasonPredictionsForm({
     if (existingPrediction) {
       updatedPrediction = {
         ...existingPrediction,
+        event_id: eventId,
         driver_id: prediction.selection_type.startsWith('DRIVER')
           ? Number(value)
           : null,
@@ -64,7 +64,6 @@ export default function SeasonPredictionsForm({
         position:
           prediction.selection_type === 'POSITION' ? Number(value) : null,
         user_id: userId!,
-        event_id: null,
         finished: false,
         points: 0,
         updated_at: null,
@@ -72,6 +71,7 @@ export default function SeasonPredictionsForm({
     } else {
       updatedPrediction = {
         prediction_group_item_id: prediction.id,
+        event_id: eventId,
         driver_id: prediction.selection_type.startsWith('DRIVER')
           ? Number(value)
           : null,
@@ -81,7 +81,6 @@ export default function SeasonPredictionsForm({
         position:
           prediction.selection_type === 'POSITION' ? Number(value) : null,
         user_id: userId!,
-        event_id: null,
         finished: false,
         points: 0,
         updated_at: null,
@@ -98,7 +97,7 @@ export default function SeasonPredictionsForm({
     });
   };
 
-  const renderField = (prediction: SeasonPredictionsConfig) => {
+  const renderField = (prediction: EventPredictionsConfig, eventId: number) => {
     switch (prediction.selection_type) {
       case 'DRIVER_UNIQUE':
       case 'DRIVER_MULTIPLE':
@@ -109,10 +108,14 @@ export default function SeasonPredictionsForm({
             size='sm'
             selectedKeys={[
               formData
-                .find((p) => p.prediction_group_item_id === prediction.id)
+                .find(
+                  (p) =>
+                    p.prediction_group_item_id === prediction.id &&
+                    p.event_id === eventId
+                )
                 ?.driver_id?.toString() || '',
             ]}
-            onChange={(e) => handleChange(prediction, e.target.value)}
+            onChange={(e) => handleChange(prediction, eventId, e.target.value)}
           >
             {drivers.map((driver) => (
               <SelectItem key={driver.id}>{driver.full_name}</SelectItem>
@@ -129,10 +132,14 @@ export default function SeasonPredictionsForm({
             size='sm'
             selectedKeys={[
               formData
-                .find((p) => p.prediction_group_item_id === prediction.id)
+                .find(
+                  (p) =>
+                    p.prediction_group_item_id === prediction.id &&
+                    p.event_id === eventId
+                )
                 ?.team_id?.toString() || '',
             ]}
-            onChange={(e) => handleChange(prediction, e.target.value)}
+            onChange={(e) => handleChange(prediction, eventId, e.target.value)}
           >
             {teams.map((team) => (
               <SelectItem key={team.id}>{team.name}</SelectItem>
@@ -148,10 +155,16 @@ export default function SeasonPredictionsForm({
             max={20}
             value={
               formData
-                .find((p) => p.prediction_group_item_id === prediction.id)
+                .find(
+                  (p) =>
+                    p.prediction_group_item_id === prediction.id &&
+                    p.event_id === eventId
+                )
                 ?.position?.toString() || ''
             }
-            onChange={(e) => handleChange(prediction, parseInt(e.target.value))}
+            onChange={(e) =>
+              handleChange(prediction, eventId, parseInt(e.target.value))
+            }
             className='w-full'
             placeholder='Enter position'
             variant='bordered'
@@ -166,22 +179,28 @@ export default function SeasonPredictionsForm({
 
   return (
     <Accordion variant='splitted'>
-      <AccordionItem aria-label={'season'} title={'Temporada'}>
-        <form onSubmit={handleSubmit} className='space-y-6'>
-          {predictions.map((prediction) => (
-            <div key={prediction.id} className='space-y-2'>
-              <label className='block text-sm font-medium'>
-                {prediction.prediction_name}
-              </label>
-              {renderField(prediction)}
-            </div>
-          ))}
+      {predictions.map((event) => (
+        <AccordionItem
+          key={event.id}
+          aria-label={event.name}
+          title={event.name}
+        >
+          <form onSubmit={handleSubmit} className='space-y-6'>
+            {event.predictions_config.map((prediction) => (
+              <div key={`${prediction.id}-${event.id}`} className='space-y-2'>
+                <label className='block text-sm font-medium'>
+                  {prediction.prediction_name}
+                </label>
+                {renderField(prediction, event.id)}
+              </div>
+            ))}
 
-          <Button type='submit' className='w-full'>
-            Save Predictions
-          </Button>
-        </form>
-      </AccordionItem>
+            <Button type='submit' className='w-full'>
+              Save Predictions
+            </Button>
+          </form>
+        </AccordionItem>
+      ))}
     </Accordion>
   );
 }
