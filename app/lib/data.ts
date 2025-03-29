@@ -1,3 +1,4 @@
+'use server';
 import postgres from 'postgres';
 import {
   User,
@@ -129,7 +130,7 @@ export async function fetchSeasonPredictionsConfig() {
 export async function fetchSeasonUserPredictions(userId: number) {
   const data = await sql<
     UserPrediction[]
-  >`select * from user_predictions where user_id = ${userId}`;
+  >`select * from user_predictions where user_id = ${userId} and event_id is null`;
   return data;
 }
 
@@ -168,5 +169,65 @@ export async function fetchEventPredictionsConfig() {
     })
   );
 
+  return data;
+}
+
+// next event
+export async function fetchNextEventPredictionsConfig() {
+  const events = await sql<Event[]>`select
+    *
+  from
+    events
+  where
+    date > CURRENT_DATE
+    and status != 'FINISHED'
+  order by
+    date asc
+  limit 1`;
+
+  const predictions_config = await sql<EventPredictionsConfig[]>`
+    select
+      pgi.id,
+      pg."name" group_name,
+      pg.prediction_deadline,
+      pgi.name prediction_name,
+      pgi.selection_type
+    from
+      prediction_groups pg
+    inner join prediction_group_items pgi on
+      pg.id = pgi.prediction_group_id
+    where
+      group_type = 'RACE'
+  `;
+
+  const data = await Promise.all(
+    events.map(async (event) => {
+      return {
+        ...event,
+        predictions_config,
+      };
+    })
+  );
+
+  return data;
+}
+
+// event user predictions
+export async function fetchEventUserPredictions(userId: number) {
+  const data = await sql<
+    UserPrediction[]
+  >`select * from user_predictions where user_id = ${userId} and event_id is not null`;
+  return data;
+}
+
+// season results
+export async function fetchSeasonResults() {
+  const data = await sql<SeasonResult[]>`select * from season_results`;
+  return data;
+}
+
+// event results
+export async function fetchEventResults() {
+  const data = await sql<EventResult[]>`select * from event_results`;
   return data;
 }

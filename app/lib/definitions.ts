@@ -66,14 +66,14 @@ export type Event = {
   track: string;
   date: string;
   has_sprint_race: boolean;
-  status: 'NOT_STARTED';
+  status: 'NOT_STARTED' | 'FINISHED' | 'IN_PROGRESS';
   track_image: string;
 };
 
 export type EventResult = {
-  id: number;
+  id?: number;
   event_id: number;
-  driver_id: number;
+  driver_id: number | null;
   team_id: number | null;
   position: number | null;
   prediction_group_item_id: number;
@@ -90,7 +90,7 @@ export type EventResultDetailed = EventResult & {
 };
 
 export type SeasonResult = {
-  id: number;
+  id?: number;
   prediction_group_item_id: number;
   driver_id: number | null;
   team_id: number | null;

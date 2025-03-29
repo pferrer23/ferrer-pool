@@ -1,6 +1,6 @@
 'use server';
 import postgres from 'postgres';
-import { UserPrediction } from './definitions';
+import { EventResult, SeasonResult, UserPrediction } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!);
 
@@ -46,5 +46,73 @@ export async function saveUserPredictions(
   } catch (error) {
     console.error(error);
     return { message: 'Error saving predictions' };
+  }
+}
+
+// save season results
+export async function saveSeasonResults(results: SeasonResult[]) {
+  try {
+    await sql`
+    INSERT INTO season_results (
+      prediction_group_item_id,
+      driver_id,
+      team_id,
+      position
+    )
+    VALUES ${sql(
+      results.map(
+        (p) =>
+          [
+            p.prediction_group_item_id,
+            p.driver_id ?? null,
+            p.team_id ?? null,
+            p.position ?? null,
+          ] as const
+      )
+    )}
+    ON CONFLICT (prediction_group_item_id)
+    DO UPDATE SET
+      driver_id = EXCLUDED.driver_id,
+      team_id = EXCLUDED.team_id, 
+      position = EXCLUDED.position
+    `;
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error saving season results' };
+  }
+}
+
+// save event results
+export async function saveEventResults(results: EventResult[]) {
+  try {
+    await sql`
+    INSERT INTO event_results (
+      event_id,
+      prediction_group_item_id,
+      driver_id,
+      team_id,
+      position
+    )
+    VALUES ${sql(
+      results.map(
+        (p) =>
+          [
+            p.event_id,
+            p.prediction_group_item_id,
+            p.driver_id ?? null,
+            p.team_id ?? null,
+            p.position ?? null,
+          ] as const
+      )
+    )}
+    ON CONFLICT (event_id, prediction_group_item_id)
+    DO UPDATE SET
+      driver_id = EXCLUDED.driver_id,
+      team_id = EXCLUDED.team_id, 
+      position = EXCLUDED.position
+    `;
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error saving season results' };
   }
 }

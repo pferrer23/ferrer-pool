@@ -23,14 +23,16 @@ interface EventPredictionsFormProps {
   predictions: EventsWithPredictionsConfig[];
   drivers: Driver[];
   teams: Team[];
+  userPredictions: UserPrediction[];
 }
 
 export default function EventPredictionsForm({
   predictions,
   drivers,
   teams,
+  userPredictions,
 }: EventPredictionsFormProps) {
-  const [formData, setFormData] = useState<UserPrediction[]>([]);
+  const [formData, setFormData] = useState<UserPrediction[]>(userPredictions);
   const session = useSession();
   const userId = session?.data?.user?.id;
 
