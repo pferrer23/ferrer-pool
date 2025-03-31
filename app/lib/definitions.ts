@@ -1,6 +1,8 @@
 // This file contains type definitions for your data.
 // It describes the shape of the data, and what data type each property should accept.
 
+import { DateValue } from '@internationalized/date';
+
 export type User = {
   id: number;
   name: string;
@@ -27,10 +29,10 @@ export type Driver = {
 };
 
 export type PredictionGroup = {
-  id: number;
+  id?: number;
   name: string;
   group_type: 'SEASON' | 'RACE';
-  prediction_deadline: string | null;
+  prediction_deadline: DateValue | null;
 };
 
 export type PredictionGroupItem = {
@@ -146,4 +148,9 @@ export type EventPredictionsConfig = {
 
 export type EventsWithPredictionsConfig = Event & {
   predictions_config: EventPredictionsConfig[];
+};
+
+export type PredictionGroupConfig = PredictionGroup & {
+  items: PredictionGroupItem[];
+  points: PointsDefinition[];
 };

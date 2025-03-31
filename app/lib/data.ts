@@ -231,3 +231,37 @@ export async function fetchEventResults() {
   const data = await sql<EventResult[]>`select * from event_results`;
   return data;
 }
+
+// fetch prediction group configurations with items and points
+export async function fetchPredictionGroupConfigs() {
+  const groups = await sql`
+    select 
+      id,
+      name,
+      group_type,
+      prediction_deadline
+    from prediction_groups
+  `;
+
+  const items = await sql`
+    select
+      *
+    from prediction_group_items
+  `;
+
+  const points = await sql`
+    select
+      *
+    from points_definitions
+  `;
+
+  const groupedData = groups.map((group) => {
+    return {
+      ...group,
+      items: items.filter((item) => item.prediction_group_id === group.id),
+      points: points.filter((point) => point.prediction_group_id === group.id),
+    };
+  });
+
+  return groupedData;
+}
