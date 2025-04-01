@@ -36,11 +36,11 @@ export default function EventPredictionsForm({
   const session = useSession();
   const userId = session?.data?.user?.id;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: EventsWithPredictionsConfig) => {
     // Handle form submission
-    console.log(formData);
-    saveUserPredictions(userId!, formData);
+    const data_to_save = formData.filter((p) => p.event_id === event.id);
+    console.log(data_to_save);
+    saveUserPredictions(userId!, data_to_save);
   };
 
   const handleChange = (
@@ -49,7 +49,8 @@ export default function EventPredictionsForm({
     value: string | number
   ) => {
     const existingPrediction = formData.find(
-      (p) => p.prediction_group_item_id === prediction.id
+      (p) =>
+        p.prediction_group_item_id === prediction.id && p.event_id === eventId
     );
 
     let updatedPrediction: UserPrediction;
@@ -187,7 +188,13 @@ export default function EventPredictionsForm({
           aria-label={event.name}
           title={event.name}
         >
-          <form onSubmit={handleSubmit} className='space-y-6'>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(event);
+            }}
+            className='space-y-6'
+          >
             {event.predictions_config.map((prediction) => (
               <div key={`${prediction.id}-${event.id}`} className='space-y-2'>
                 <label className='block text-sm font-medium'>
