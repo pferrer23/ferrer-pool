@@ -16,6 +16,7 @@ import {
   SelectItem,
   Input,
   Button,
+  Chip,
 } from '@heroui/react';
 import { saveUserPredictions } from '@/app/lib/actions';
 
@@ -100,7 +101,11 @@ export default function EventPredictionsForm({
     });
   };
 
-  const renderField = (prediction: EventPredictionsConfig, eventId: number) => {
+  const renderField = (
+    prediction: EventPredictionsConfig,
+    eventId: number,
+    isEventEnabled: boolean
+  ) => {
     switch (prediction.selection_type) {
       case 'DRIVER_UNIQUE':
       case 'DRIVER_MULTIPLE':
@@ -119,6 +124,7 @@ export default function EventPredictionsForm({
                 ?.driver_id?.toString() || '',
             ]}
             onChange={(e) => handleChange(prediction, eventId, e.target.value)}
+            isDisabled={!isEventEnabled}
           >
             {drivers.map((driver) => (
               <SelectItem key={driver.id}>{driver.full_name}</SelectItem>
@@ -143,6 +149,7 @@ export default function EventPredictionsForm({
                 ?.team_id?.toString() || '',
             ]}
             onChange={(e) => handleChange(prediction, eventId, e.target.value)}
+            isDisabled={!isEventEnabled}
           >
             {teams.map((team) => (
               <SelectItem key={team.id}>{team.name}</SelectItem>
@@ -172,6 +179,7 @@ export default function EventPredictionsForm({
             placeholder='Enter position'
             variant='bordered'
             size='sm'
+            isDisabled={!isEventEnabled}
           />
         );
 
@@ -180,13 +188,40 @@ export default function EventPredictionsForm({
     }
   };
 
+  const isEventEnabled = (event: EventsWithPredictionsConfig) => {
+    if (event.quali_start_at) {
+      return new Date(event.quali_start_at) > new Date();
+    }
+    return true;
+  };
+
   return (
     <Accordion variant='splitted'>
-      {predictions.map((event) => (
+      {predictions.map((event, index) => (
         <AccordionItem
           key={event.id}
           aria-label={event.name}
-          title={event.name}
+          title={
+            <div className='flex justify-between items-center'>
+              <Chip
+                color={isEventEnabled(event) ? 'success' : 'danger'}
+                size='sm'
+              >
+                {event.name}
+              </Chip>
+              {event.quali_start_at && (
+                <span className='text-sm text-warning-500'>
+                  {event.quali_start_at && (
+                    <span className='ml-2 text-xs text-gray-500'>
+                      Closes at{' '}
+                      {new Date(event.quali_start_at).toLocaleString()}
+                    </span>
+                  )}
+                </span>
+              )}
+              {!event.quali_start_at && <span>{event.name}</span>}
+            </div>
+          }
         >
           <form
             onSubmit={(e) => {
@@ -200,7 +235,7 @@ export default function EventPredictionsForm({
                 <label className='block text-sm font-medium'>
                   {prediction.prediction_name}
                 </label>
-                {renderField(prediction, event.id)}
+                {renderField(prediction, event.id, isEventEnabled(event))}
               </div>
             ))}
 

@@ -70,6 +70,7 @@ export type Event = {
   has_sprint_race: boolean;
   status: 'NOT_STARTED' | 'FINISHED' | 'IN_PROGRESS';
   track_image: string;
+  quali_start_at: string | null;
 };
 
 export type EventResult = {
