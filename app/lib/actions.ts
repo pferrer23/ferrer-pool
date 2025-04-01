@@ -244,3 +244,138 @@ export async function createPointsDefinition(
     return { message: 'Error creating points definition' };
   }
 }
+
+// close event
+export async function closeEvent(eventId: number) {
+  try {
+    await sql`
+      UPDATE events
+      SET status = 'FINISHED'
+      WHERE id = ${eventId}
+    `;
+
+    const pointsConfig = await sql`
+      select
+        pg.id group_id,
+        pg.name group_name,
+        pgi.id item_id,
+        pgi.name item_name,
+        pgi.selection_type item_selection_type,
+        pd.id points_id,
+        pd.type points_type,
+        pd.points
+      from
+        prediction_groups pg
+      inner join prediction_group_items pgi on
+        pg.id = pgi.prediction_group_id
+      inner join points_definitions pd on
+        pg.id = pd.prediction_group_id
+      where
+        pg.group_type = 'RACE'
+      order by
+        pg.id,
+        pgi.id,
+        pd.id
+    `;
+
+    const userPredictions = await sql`
+      select
+        u.id user_id,
+        u.name user_name,
+        up.id prediction_id,
+        up.prediction_group_item_id,
+        pgi.name item_name,
+        pg.id group_id,
+        pg.name group_name,
+        up.driver_id,
+        up.team_id,
+        up.position
+      from users u
+      inner join user_predictions up on u.id = up.user_id
+      inner join prediction_group_items pgi on up.prediction_group_item_id = pgi.id
+      inner join prediction_groups pg on pgi.prediction_group_id = pg.id
+      where up.event_id = ${eventId}
+      order by u.id, pgi.id, up.id
+    `;
+
+    const eventResults = await sql`
+      select
+        prediction_group_item_id,
+        driver_id,
+        team_id,
+        position
+      from event_results
+      where event_id = ${eventId}
+    `;
+
+    const user_prediction_points = userPredictions.map((userPrediction) => {
+      const item_id = userPrediction.prediction_group_item_id;
+      let user_prediction_item_points = 0;
+
+      const item_points_configs = pointsConfig.filter(
+        (pt) => pt.item_id === item_id
+      );
+
+      item_points_configs.forEach((points) => {
+        if (points.item_id === item_id) {
+          let validation_column = 'driver_id';
+          if (points.item_selection_type === 'TEAM_UNIQUE') {
+            validation_column = 'team_id';
+          }
+          if (points.item_selection_type === 'POSITION') {
+            validation_column = 'position';
+          }
+
+          const user_group_items = userPredictions
+            .filter(
+              (itm) =>
+                itm.group_id === points.group_id &&
+                itm.user_id === userPrediction.user_id
+            )
+            .map((itm) => itm[validation_column]);
+
+          const user_exact_item = userPrediction[validation_column];
+          const result_value = eventResults.find(
+            (itm) => itm.prediction_group_item_id === item_id
+          )?.[validation_column];
+
+          if (
+            points.points_type === 'EXACT' &&
+            user_exact_item == result_value
+          ) {
+            user_prediction_item_points += points.points;
+          }
+
+          if (
+            points.points_type === 'ANY_IN_ITEMS' &&
+            user_group_items.includes(result_value)
+          ) {
+            user_prediction_item_points += points.points;
+          }
+        }
+      });
+
+      return {
+        ...userPrediction,
+        points: user_prediction_item_points,
+      };
+    });
+
+    // Update points in database
+    await sql`
+      UPDATE user_predictions
+      SET points = updates.points::integer
+      FROM (VALUES ${sql(
+        user_prediction_points.map(
+          (item: any) => [item.prediction_id, String(item.points)] as const
+        )
+      )}) AS updates(prediction_id, points)
+      WHERE user_predictions.id = updates.prediction_id::integer
+    `;
+
+    return { message: 'Event closed successfully' };
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error closing event' };
+  }
+}

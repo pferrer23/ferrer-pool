@@ -158,6 +158,7 @@ export async function fetchEventPredictionsConfig() {
       pg.id = pgi.prediction_group_id
     where
       group_type = 'RACE'
+    ORDER BY pg.id, pgi.id
   `;
 
   const data = await Promise.all(

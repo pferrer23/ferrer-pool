@@ -23,7 +23,7 @@ import {
   fetchTeams,
   fetchEventResults,
 } from '@/app/lib/data';
-import { saveEventResults } from '@/app/lib/actions';
+import { saveEventResults, closeEvent } from '@/app/lib/actions';
 import { CheckCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 export default function EventResultsForm() {
@@ -59,6 +59,7 @@ export default function EventResultsForm() {
 
   const handleCloseEvent = async () => {
     console.log('close event');
+    closeEvent(2);
   };
 
   const handleChange = (
