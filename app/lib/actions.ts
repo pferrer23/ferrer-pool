@@ -51,9 +51,10 @@ export async function saveUserPredictions(
       position = EXCLUDED.position,
       updated_at = CURRENT_TIMESTAMP
     `;
+    return { message: 'Predictions saved successfully', success: true };
   } catch (error) {
     console.error(error);
-    return { message: 'Error saving predictions' };
+    return { message: 'Error saving predictions', success: false };
   }
 }
 

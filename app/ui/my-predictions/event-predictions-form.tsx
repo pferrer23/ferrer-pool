@@ -17,6 +17,7 @@ import {
   Input,
   Button,
   Chip,
+  addToast,
 } from '@heroui/react';
 import { saveUserPredictions } from '@/app/lib/actions';
 
@@ -34,14 +35,31 @@ export default function EventPredictionsForm({
   userPredictions,
 }: EventPredictionsFormProps) {
   const [formData, setFormData] = useState<UserPrediction[]>(userPredictions);
+  const [isSaving, setIsSaving] = useState(false);
   const session = useSession();
   const userId = session?.data?.user?.id;
 
-  const handleSubmit = (event: EventsWithPredictionsConfig) => {
+  const handleSubmit = async (event: EventsWithPredictionsConfig) => {
     // Handle form submission
+    setIsSaving(true);
     const data_to_save = formData.filter((p) => p.event_id === event.id);
     console.log(data_to_save);
-    saveUserPredictions(userId!, data_to_save);
+    const result = await saveUserPredictions(userId!, data_to_save);
+
+    if (result.success) {
+      addToast({
+        title: 'Guardado Exitoso',
+        description: 'Gracias por participar',
+        color: 'success',
+      });
+    } else {
+      addToast({
+        title: 'Error Guardando',
+        description: 'Por favor avisar',
+        color: 'danger',
+      });
+    }
+    setIsSaving(false);
   };
 
   const handleChange = (
@@ -218,8 +236,7 @@ export default function EventPredictionsForm({
                 <span className='text-sm text-warning-500'>
                   {event.quali_start_at && (
                     <span className='ml-2 text-xs text-gray-500'>
-                      Closes at{' '}
-                      {new Date(event.quali_start_at).toLocaleString()}
+                      Cierra: {new Date(event.quali_start_at).toLocaleString()}
                     </span>
                   )}
                 </span>
@@ -244,7 +261,7 @@ export default function EventPredictionsForm({
               </div>
             ))}
 
-            <Button type='submit' className='w-full'>
+            <Button type='submit' className='w-full' isLoading={isSaving}>
               Save Predictions
             </Button>
           </form>
