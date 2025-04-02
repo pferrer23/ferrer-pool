@@ -54,6 +54,8 @@ export default function EventPredictionsForm({
         p.prediction_group_item_id === prediction.id && p.event_id === eventId
     );
 
+    console.log(existingPrediction);
+
     let updatedPrediction: UserPrediction;
     if (existingPrediction) {
       updatedPrediction = {
@@ -72,6 +74,14 @@ export default function EventPredictionsForm({
         points: 0,
         updated_at: null,
       };
+
+      setFormData((prev) => {
+        return prev.map((p) =>
+          p.prediction_group_item_id === prediction.id && p.event_id === eventId
+            ? updatedPrediction
+            : p
+        );
+      });
     } else {
       updatedPrediction = {
         prediction_group_item_id: prediction.id,
@@ -89,16 +99,11 @@ export default function EventPredictionsForm({
         points: 0,
         updated_at: null,
       };
-    }
 
-    setFormData((prev) => {
-      if (existingPrediction) {
-        return prev.map((p) =>
-          p.prediction_group_item_id === prediction.id ? updatedPrediction : p
-        );
-      }
-      return [...prev, updatedPrediction] as UserPrediction[];
-    });
+      setFormData((prev) => {
+        return [...prev, updatedPrediction] as UserPrediction[];
+      });
+    }
   };
 
   const renderField = (
