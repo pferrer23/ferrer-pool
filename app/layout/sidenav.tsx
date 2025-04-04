@@ -51,7 +51,7 @@ export default function SideNav() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className='hidden md:flex flex-col w-64 bg-background-900 border-r border-background-800'>
+      <aside className='hidden lg:flex flex-col w-64 bg-background-900 border-r border-background-800'>
         <div className='flex items-center justify-center py-3'>
           <Link href='/dashboard' className='px-6 py-4'>
             <Image
@@ -83,7 +83,7 @@ export default function SideNav() {
       </aside>
 
       {/* Mobile bottom navigation */}
-      <nav className='md:hidden fixed bottom-0 left-0 right-0 bg-background-900 border-t border-background-800 z-50'>
+      <nav className='lg:hidden fixed bottom-0 left-0 right-0 bg-background-900 border-t border-background-800 z-50'>
         <div className='flex justify-around px-2 py-3'>
           {menuItems.map((menuItem) => (
             <Link
