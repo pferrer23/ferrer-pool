@@ -17,12 +17,12 @@ import clsx from 'clsx';
 import { UserResultByEvent } from '@/app/lib/definitions';
 
 const columns = [
-  { name: 'EVENT', uid: 'event_name' },
-  { name: 'USER', uid: 'user' },
-  { name: 'PREDICTION NAME', uid: 'prediction_name' },
-  { name: 'PREDICTION', uid: 'prediction' },
-  { name: 'RESULT', uid: 'result' },
-  { name: 'POINTS', uid: 'points' },
+  { name: 'EVENTO', uid: 'event_name' },
+  { name: 'USUARIO', uid: 'user' },
+  { name: 'ITEM', uid: 'prediction_name' },
+  { name: 'PREDICCIÓN', uid: 'prediction' },
+  { name: 'RESULTADO', uid: 'result' },
+  { name: 'PUNTOS', uid: 'points' },
 ];
 
 export default function ResultsTable() {

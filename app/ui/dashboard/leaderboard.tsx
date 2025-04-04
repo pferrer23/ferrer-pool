@@ -3,6 +3,20 @@ import { Avatar } from '@heroui/react';
 
 export default async function Leaderboard() {
   const leaderboard = await fetchLeaderboard();
+
+  const getPositionEmoji = (position: any) => {
+    switch (parseInt(position)) {
+      case 1:
+        return '🏆';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return position;
+    }
+  };
+
   return (
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
       {leaderboard.map((item) => (
@@ -21,7 +35,9 @@ export default async function Leaderboard() {
           </div>
           <p className='text-4xl font-bold text-gray-50'>{item.points}</p>
           <div className='flex items-center mt-2'>
-            <span className='text-gray-400'>Position: {item.position}</span>
+            <span className='text-gray-400 text-4xl'>
+              {getPositionEmoji(item.position)}
+            </span>
           </div>
         </div>
       ))}

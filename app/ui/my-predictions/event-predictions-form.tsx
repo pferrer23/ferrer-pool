@@ -262,7 +262,7 @@ export default function EventPredictionsForm({
             ))}
 
             <Button type='submit' className='w-full' isLoading={isSaving}>
-              Save Predictions
+              Guardar Predicciones
             </Button>
           </form>
         </AccordionItem>

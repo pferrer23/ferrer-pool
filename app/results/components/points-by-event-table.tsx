@@ -15,9 +15,9 @@ import { fetchUserPointsByEvent } from '@/app/lib/data';
 import { UserPointsByEvent } from '@/app/lib/definitions';
 
 const columns = [
-  { name: 'EVENT', uid: 'event_name' },
-  { name: 'USER', uid: 'user' },
-  { name: 'POINTS', uid: 'points' },
+  { name: 'EVENTO', uid: 'event_name' },
+  { name: 'USUARIO', uid: 'user' },
+  { name: 'PUNTOS', uid: 'points' },
 ];
 
 export default function PointsByEventTable() {

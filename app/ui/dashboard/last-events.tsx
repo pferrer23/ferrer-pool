@@ -20,7 +20,7 @@ export default function LastEvents({ events }: { events: EventWithResults[] }) {
 
   return (
     <div className='space-y-4'>
-      <h2 className='text-2xl font-bold'>Last Events</h2>
+      <h2 className='text-2xl font-bold'>Últimos Eventos</h2>
       <Accordion
         variant='splitted'
         className='p-2 flex flex-col gap-1 w-full'

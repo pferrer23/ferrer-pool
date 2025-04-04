@@ -178,7 +178,7 @@ export default function SeasonPredictionsForm({
           ))}
 
           <Button type='submit' className='w-full'>
-            Save Predictions
+            Guardar Predicciones
           </Button>
         </form>
       </AccordionItem>
