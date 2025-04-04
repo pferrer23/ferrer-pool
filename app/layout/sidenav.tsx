@@ -9,6 +9,7 @@ import {
   HomeIcon,
   CheckCircleIcon,
   Cog6ToothIcon,
+  TrophyIcon,
 } from '@heroicons/react/24/outline';
 
 export default function SideNav() {
@@ -31,6 +32,11 @@ export default function SideNav() {
       name: 'Mis Predicciones',
       href: '/my-predictions',
       icon: CheckCircleIcon,
+    },
+    {
+      name: 'Resultados',
+      href: '/results',
+      icon: TrophyIcon,
     },
   ];
 

@@ -155,3 +155,31 @@ export type PredictionGroupConfig = PredictionGroup & {
   items: PredictionGroupItem[];
   points: PointsDefinition[];
 };
+
+export type UserResultByEvent = {
+  event_id: number;
+  event_name: string;
+  user_id: number;
+  user_name: string;
+  user_avatar: string | null;
+  item_id: number;
+  name: string;
+  driver_id: number | null;
+  driver_acronym: string | null;
+  driver_avatar: string | null;
+  driver_color: string | null;
+  result_driver_acronym: string | null;
+  result_driver_avatar: string | null;
+  result_driver_color: string | null;
+  points: number;
+};
+
+export type UserPointsByEvent = {
+  event_id: number;
+  event_name: string;
+  track_image: string;
+  user_id: number;
+  user_name: string;
+  user_avatar: string;
+  points: number;
+};

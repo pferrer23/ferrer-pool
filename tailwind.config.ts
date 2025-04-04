@@ -215,5 +215,44 @@ export default {
       pattern:
         /(bg)-(primary|gray|red|orange|yellow|green|teal|indigo|purple|pink)-(50|100|200|300|400|500|600|700|800|900)/,
     },
+    // Red Bull Racing
+    'bg-[#3671C6]',
+    'text-[#3671C6]',
+
+    // McLaren
+    'bg-[#FF8000]',
+    'text-[#FF8000]',
+
+    // Kick Sauber
+    'bg-[#52E252]',
+    'text-[#52E252]',
+
+    // Racing Bulls
+    'bg-[#6692FF]',
+    'text-[#6692FF]',
+
+    // Alpine
+    'bg-[#0093CC]',
+    'text-[#0093CC]',
+
+    // Mercedes
+    'bg-[#27F4D2]',
+    'text-[#27F4D2]',
+
+    // Aston Martin
+    'bg-[#229971]',
+    'text-[#229971]',
+
+    // Ferrari
+    'bg-[#E80020]',
+    'text-[#E80020]',
+
+    // Williams
+    'bg-[#64C4FF]',
+    'text-[#64C4FF]',
+
+    // Haas F1 Team
+    'bg-[#B6BABD]',
+    'text-[#B6BABD]',
   ],
 } satisfies Config;
