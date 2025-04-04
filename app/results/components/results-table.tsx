@@ -46,12 +46,17 @@ export default function ResultsTable() {
 
       case 'user':
         return (
-          <User
-            name={result.user_name}
-            avatarProps={{
-              src: result.user_avatar,
-            }}
-          />
+          <>
+            <div className='hidden sm:block'>
+              <User
+                name={result.user_name}
+                avatarProps={{
+                  src: result.user_avatar,
+                }}
+              />
+            </div>
+            <div className='sm:hidden'>{result.user_name}</div>
+          </>
         );
 
       case 'prediction_name':
@@ -64,7 +69,7 @@ export default function ResultsTable() {
               <img
                 src={result.driver_avatar}
                 alt={result.driver_acronym}
-                className='w-8 h-8 rounded-full'
+                className='hidden sm:block w-8 h-8 rounded-full'
               />
             )}
             <Chip
@@ -87,7 +92,7 @@ export default function ResultsTable() {
               <img
                 src={result.result_driver_avatar}
                 alt={result.result_driver_acronym}
-                className='w-8 h-8 rounded-full'
+                className='hidden sm:block w-8 h-8 rounded-full'
               />
             )}
             <Chip

@@ -42,7 +42,7 @@ export default function PointsByEventTable() {
             <img
               src={result.track_image}
               alt={result.event_name}
-              className='w-12 h-8 object-contain'
+              className='hidden sm:block w-12 h-8 object-contain'
             />
             <span>{result.event_name}</span>
           </div>
@@ -50,12 +50,17 @@ export default function PointsByEventTable() {
 
       case 'user':
         return (
-          <User
-            name={result.user_name}
-            avatarProps={{
-              src: result.user_avatar,
-            }}
-          />
+          <>
+            <div className='hidden sm:block'>
+              <User
+                name={result.user_name}
+                avatarProps={{
+                  src: result.user_avatar,
+                }}
+              />
+            </div>
+            <div className='sm:hidden'>{result.user_name}</div>
+          </>
         );
 
       case 'points':
