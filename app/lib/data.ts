@@ -293,6 +293,8 @@ export const fetchUserFullResults = async () => {
       u.id = up.user_id
     inner join prediction_group_items pgi on
       pgi.id = up.prediction_group_item_id
+    inner join prediction_groups pg on
+      pg.id = pgi.prediction_group_id
     inner join events e on
       e.id = up.event_id
     left join drivers d_p on
@@ -302,7 +304,7 @@ export const fetchUserFullResults = async () => {
     left join drivers d_r on d_r.id = er.driver_id 
     left join teams d_r_t on d_r_t.id = d_r.team_id
     where e.quali_start_at < NOW()
-    order by e.date desc, pgi.id, u.name
+    order by e.date desc, pg.id, pgi.id, u.name
     limit 80
   `;
   return data;
