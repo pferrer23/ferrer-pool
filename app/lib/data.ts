@@ -301,7 +301,7 @@ export const fetchUserFullResults = async () => {
     left join event_results er on er.event_id = e.id and er.prediction_group_item_id = pgi.id 
     left join drivers d_r on d_r.id = er.driver_id 
     left join teams d_r_t on d_r_t.id = d_r.team_id
-    where e.quali_start_at < CURRENT_DATE
+    where e.quali_start_at < NOW()
     order by e.date desc, pgi.id, u.name
     limit 80
   `;
