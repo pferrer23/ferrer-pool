@@ -72,7 +72,7 @@ export default function ResultsTable() {
       </div>
       <div className='flex flex-wrap gap-2 mb-4'>
         {dashboardData[0]?.event_user_points?.map((userPoints: any) => (
-          <Card key={userPoints.user_id} className='py-3 px-4'>
+          <Card key={userPoints.user_id} className='p-2'>
             <div className='flex items-center gap-2'>
               <Avatar
                 src={userPoints.user_avatar}
@@ -113,7 +113,7 @@ export default function ResultsTable() {
                             <img
                               src={result.driver_avatar}
                               alt={result.driver_acronym}
-                              className='w-6 h-6 sm:w-8 sm:h-8 rounded-full'
+                              className='hidden sm:block w-8 h-8 rounded-full'
                             />
                           )}
                           <Chip
@@ -152,7 +152,7 @@ export default function ResultsTable() {
                             <img
                               src={prediction.user_avatar}
                               alt={prediction.user_name}
-                              className='w-8 h-8 rounded-full'
+                              className='hidden sm:block w-8 h-8 rounded-full'
                             />
                             <span>{prediction.user_name}</span>
                           </div>
@@ -164,7 +164,7 @@ export default function ResultsTable() {
                                 <img
                                   src={prediction[`${name}_driver_avatar`]}
                                   alt={prediction[`${name}_driver_acronym`]}
-                                  className='w-8 h-8 rounded-full'
+                                  className='hidden sm:block w-8 h-8 rounded-full'
                                 />
                               )}
                               <Chip
