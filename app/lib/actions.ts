@@ -301,12 +301,15 @@ export async function closeEvent(eventId: number) {
 
     const eventResults = await sql`
       select
-        prediction_group_item_id,
-        driver_id,
-        team_id,
-        position
-      from event_results
-      where event_id = ${eventId}
+        er.prediction_group_item_id,
+        pg.id group_id,
+        er.driver_id,
+        er.team_id,
+        er.position
+      from event_results er
+      inner join prediction_group_items pgi on er.prediction_group_item_id = pgi.id
+      inner join prediction_groups pg on pgi.prediction_group_id = pg.id
+      where er.event_id = ${eventId}
     `;
 
     const user_prediction_points = userPredictions.map((userPrediction) => {
@@ -327,18 +330,14 @@ export async function closeEvent(eventId: number) {
             validation_column = 'position';
           }
 
-          const user_group_items = userPredictions
-            .filter(
-              (itm) =>
-                itm.group_id === points.group_id &&
-                itm.user_id === userPrediction.user_id
-            )
-            .map((itm) => itm[validation_column]);
-
           const user_exact_item = userPrediction[validation_column];
           const result_value = eventResults.find(
             (itm) => itm.prediction_group_item_id === item_id
           )?.[validation_column];
+
+          const result_group_items = eventResults
+            .filter((itm) => itm.group_id === points.group_id)
+            .map((itm) => itm[validation_column]);
 
           if (
             points.points_type === 'EXACT' &&
@@ -349,7 +348,7 @@ export async function closeEvent(eventId: number) {
 
           if (
             points.points_type === 'ANY_IN_ITEMS' &&
-            user_group_items.includes(result_value)
+            result_group_items.includes(user_exact_item)
           ) {
             user_prediction_item_points += points.points;
           }
@@ -362,7 +361,6 @@ export async function closeEvent(eventId: number) {
       };
     });
 
-    // Update points in database
     await sql`
       UPDATE user_predictions
       SET points = updates.points::integer
@@ -376,7 +374,7 @@ export async function closeEvent(eventId: number) {
 
     return { message: 'Event closed successfully' };
   } catch (error) {
-    console.error(error);
+    console.error('Error in closeEvent:', error);
     return { message: 'Error closing event' };
   }
 }

@@ -182,7 +182,7 @@ export async function fetchNextEventPredictionsConfig() {
   from
     events
   where
-    date > CURRENT_DATE
+    date > (CURRENT_DATE - interval '5 days')
     and status != 'FINISHED'
   order by
     date asc

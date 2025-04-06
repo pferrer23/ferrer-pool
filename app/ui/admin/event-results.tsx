@@ -57,9 +57,9 @@ export default function EventResultsForm() {
     saveEventResults(eventResults);
   };
 
-  const handleCloseEvent = async () => {
+  const handleCloseEvent = async (eventId: number) => {
     console.log('close event');
-    closeEvent(2);
+    closeEvent(eventId);
   };
 
   const handleChange = (
@@ -223,7 +223,7 @@ export default function EventResultsForm() {
                 <Button
                   color='warning'
                   className='flex-1'
-                  onPress={handleCloseEvent}
+                  onPress={() => handleCloseEvent(event.id)}
                   startContent={<LockClosedIcon className='w-5 h-5' />}
                 >
                   Close Event
