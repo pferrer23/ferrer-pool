@@ -11,131 +11,190 @@ import {
   User,
   Spinner,
   Chip,
+  Card,
+  CardHeader,
+  CardBody,
+  Select,
+  SelectItem,
+  Avatar,
 } from '@heroui/react';
-import { fetchUserFullResults } from '@/app/lib/data';
+import { fetchEventDashboardData, fetchFinishedEvents } from '@/app/lib/data';
 import clsx from 'clsx';
-import { UserResultByEvent } from '@/app/lib/definitions';
-
-const columns = [
-  { name: 'EVENTO', uid: 'event_name' },
-  { name: 'USUARIO', uid: 'user' },
-  { name: 'ITEM', uid: 'prediction_name' },
-  { name: 'PREDICCIÓN', uid: 'prediction' },
-  { name: 'RESULTADO', uid: 'result' },
-  { name: 'PUNTOS', uid: 'points' },
-];
 
 export default function ResultsTable() {
   const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<UserResultByEvent[]>([]);
+  const [dashboardData, setDashboardData] = useState<any>([]);
+  const [events, setEvents] = useState<any>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const data = await fetchUserFullResults();
-      setResults(data);
+      const finishedEvents = await fetchFinishedEvents();
+      setEvents(finishedEvents);
+
+      if (finishedEvents.length > 0) {
+        setSelectedEvent(finishedEvents[0].id.toString());
+        const dashboardData = await fetchEventDashboardData(
+          finishedEvents[0].id
+        );
+        setDashboardData(dashboardData);
+      }
+
       setLoading(false);
     };
     fetchData();
   }, []);
 
-  const renderCell = (result: any, columnKey: React.Key) => {
-    switch (columnKey) {
-      case 'event_name':
-        return <div>{result.event_name}</div>;
-
-      case 'user':
-        return (
-          <>
-            <div className='hidden sm:block'>
-              <User
-                name={result.user_name}
-                avatarProps={{
-                  src: result.user_avatar,
-                }}
-              />
-            </div>
-            <div className='sm:hidden'>{result.user_name}</div>
-          </>
-        );
-
-      case 'prediction_name':
-        return <div>{result.prediction_name}</div>;
-
-      case 'prediction':
-        return (
-          <div className='flex items-center gap-2'>
-            {result.driver_avatar && (
-              <img
-                src={result.driver_avatar}
-                alt={result.driver_acronym}
-                className='hidden sm:block w-8 h-8 rounded-full'
-              />
-            )}
-            <Chip
-              classNames={{
-                content: clsx('text-white', 'font-semibold'),
-                dot: `bg-[#${result.driver_color}]`,
-              }}
-              size='sm'
-              variant='dot'
-            >
-              {result.driver_acronym}
-            </Chip>
-          </div>
-        );
-
-      case 'result':
-        return (
-          <div className='flex items-center gap-2'>
-            {result.result_driver_avatar && (
-              <img
-                src={result.result_driver_avatar}
-                alt={result.result_driver_acronym}
-                className='hidden sm:block w-8 h-8 rounded-full'
-              />
-            )}
-            <Chip
-              classNames={{
-                content: clsx('text-white', 'font-semibold'),
-                dot: `bg-[#${result.result_driver_color}]`,
-              }}
-              size='sm'
-              variant='dot'
-            >
-              {result.result_driver_acronym}
-            </Chip>
-          </div>
-        );
-
-      case 'points':
-        return <div className='font-semibold'>{result.points}</div>;
-
-      default:
-        return null;
-    }
+  const handleEventChange = async (value: string) => {
+    setLoading(true);
+    setSelectedEvent(value);
+    const dashboardData = await fetchEventDashboardData(parseInt(value));
+    setDashboardData(dashboardData);
+    setLoading(false);
   };
 
   if (loading) return <Spinner color='warning' label='Loading...' />;
 
   return (
-    <Table aria-label='Results table'>
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn key={column.uid} align='start'>
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody items={results}>
-        {(item) => (
-          <TableRow key={`${item.event_id}-${item.user_id}-${item.item_id}`}>
-            {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey)}</TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <div className='flex flex-col gap-4'>
+      <div className='my-4'>
+        <Select
+          label='Gran Premio'
+          labelPlacement='outside'
+          selectedKeys={[selectedEvent]}
+          onChange={(e) => handleEventChange(e.target.value)}
+        >
+          {events.map((event: any) => (
+            <SelectItem key={event.id}>{event.name}</SelectItem>
+          ))}
+        </Select>
+      </div>
+      <div className='flex flex-wrap gap-2 mb-4'>
+        {dashboardData[0]?.event_user_points?.map((userPoints: any) => (
+          <Card key={userPoints.user_id} className='py-3 px-4'>
+            <div className='flex items-center gap-2'>
+              <Avatar
+                src={userPoints.user_avatar}
+                alt={userPoints.user_name}
+                size='sm'
+              />
+              <div className='flex flex-col'>
+                <span className='text-sm font-medium'>
+                  {userPoints.user_name}
+                </span>
+                <span className='text-xs text-gray-500'>
+                  {userPoints.points} pts
+                </span>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+      {dashboardData[0]?.prediction_groups.map(
+        (group: any) =>
+          group.results.length > 0 && (
+            <Card key={group.id}>
+              <CardHeader>
+                <div className='flex flex-col md:flex-row gap-4 items-start md:items-center md:justify-between w-full px-3'>
+                  <h3 className='text-xl font-bold'>{group.name}</h3>
+                  <div className='flex flex-col md:flex-row gap-2 w-full md:w-auto md:ml-auto'>
+                    <span className='text-lg text-gray-500'>Resultados</span>
+                    <div className='flex flex-wrap gap-2'>
+                      {group.results.map((result: any) => (
+                        <div
+                          key={result.id}
+                          className='flex items-center gap-2'
+                        >
+                          <span className='font-medium text-sm'>
+                            {result.item_name}:
+                          </span>
+                          {result.driver_avatar && (
+                            <img
+                              src={result.driver_avatar}
+                              alt={result.driver_acronym}
+                              className='w-6 h-6 sm:w-8 sm:h-8 rounded-full'
+                            />
+                          )}
+                          <Chip
+                            classNames={{
+                              content: clsx(
+                                'text-white text-xs sm:text-sm',
+                                'font-semibold'
+                              ),
+                              dot: `bg-[#${result.team_color}]`,
+                            }}
+                            size='sm'
+                            variant='dot'
+                          >
+                            {result.driver_acronym}
+                          </Chip>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <Table aria-label={`${group.name} predictions table`}>
+                  <TableHeader>
+                    <TableColumn>User</TableColumn>
+                    {group.prediction_names.map((name: any) => (
+                      <TableColumn key={name}>{name}</TableColumn>
+                    ))}
+                    <TableColumn align='end'>Points</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {group.predictions.map((prediction: any) => (
+                      <TableRow key={`${prediction.user_id}`}>
+                        <TableCell>
+                          <div className='flex items-center gap-2'>
+                            <img
+                              src={prediction.user_avatar}
+                              alt={prediction.user_name}
+                              className='w-8 h-8 rounded-full'
+                            />
+                            <span>{prediction.user_name}</span>
+                          </div>
+                        </TableCell>
+                        {group.prediction_names.map((name: any) => (
+                          <TableCell key={name}>
+                            <div className='flex items-center gap-2'>
+                              {prediction[`${name}_driver_avatar`] && (
+                                <img
+                                  src={prediction[`${name}_driver_avatar`]}
+                                  alt={prediction[`${name}_driver_acronym`]}
+                                  className='w-8 h-8 rounded-full'
+                                />
+                              )}
+                              <Chip
+                                classNames={{
+                                  content: clsx('text-white', 'font-semibold'),
+                                  dot: `bg-[#${
+                                    prediction[`${name}_team_color`]
+                                  }]`,
+                                }}
+                                size='sm'
+                                variant='dot'
+                              >
+                                {prediction[`${name}_driver_acronym`]}
+                              </Chip>
+                            </div>
+                          </TableCell>
+                        ))}
+                        <TableCell>
+                          <span className='font-semibold text-end'>
+                            {prediction.total_points}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardBody>
+            </Card>
+          )
+      )}
+    </div>
   );
 }

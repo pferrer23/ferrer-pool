@@ -340,3 +340,175 @@ export const fetchUserPointsByEvent = async () => {
   `;
   return data;
 };
+
+export const fetchEventDashboardData = async (eventId: number) => {
+  const events = await sql<Event[]>`
+    select
+      *
+    from events
+    where id = ${eventId}
+  `;
+
+  const groups = await sql<PredictionGroup[]>`
+    select
+      *
+    from prediction_groups
+    where group_type = 'RACE'
+    order by id
+  `;
+
+  const results = await sql`
+    select er.id,
+      pgi.id item_id,
+      pgi."name" item_name,
+      er.driver_id,
+      d.name_acronym driver_acronym, 
+      d.headshot_url driver_avatar,
+      t.colour team_color,
+      pgi.prediction_group_id group_id
+    from event_results er 
+    inner join prediction_group_items pgi ON er.prediction_group_item_id = pgi.id
+    inner join drivers d on d.id = er.driver_id 
+    inner join teams t on d.team_id = t.id
+    where er.event_id = ${eventId}
+  `;
+
+  const predictions = await sql`
+    select 
+      up.id,
+      up.user_id,
+      u."name" user_name,
+      u.profile_image user_avatar,
+      pgi.id item_id,
+      pgi."name" item_name,
+      up.driver_id,
+      d.name_acronym driver_acronym,
+      d.headshot_url driver_avatar,
+      t.colour team_color,
+      pgi.prediction_group_id group_id,
+      up.points
+    from users u 
+    inner join user_predictions up on up.user_id = u.id 
+    inner join prediction_group_items pgi on pgi.id = up.prediction_group_item_id 
+    inner join drivers d on d.id = up.driver_id 
+    inner join teams t on d.team_id = t.id
+    where up.event_id = ${eventId}
+    order by u.id, pgi.prediction_group_id, pgi.id
+  `;
+
+  const event_user_points = await sql`
+    select
+      e.id event_id,
+      e.name event_name,
+      e.track_image,
+      u.id user_id,
+      u.name user_name,
+      u.profile_image user_avatar,
+      SUM(up.points) points
+    from
+      events e
+    inner join user_predictions up on
+      up.event_id = e.id
+    inner join users u on
+      u.id = up.user_id
+    where
+      e.status = 'FINISHED'
+      and e.id = ${eventId}
+    group by
+      e.id,
+      e.name,
+      u.id,
+      u.name
+    order by
+      points desc,
+      u.name
+  `;
+
+  const data_with_groups = await Promise.all(
+    events.map(async (event) => {
+      const groups_with_results = groups.map((group) => {
+        const gr_predictions = predictions.filter(
+          (prediction) => prediction.group_id === group.id
+        );
+
+        const converted_predictions = gr_predictions.reduce(
+          (acc, prediction) => {
+            const existingUser = acc.find(
+              (p: any) => p.user_id === prediction.user_id
+            );
+
+            if (existingUser) {
+              // Add prediction as new properties
+              existingUser[`${prediction.item_name}_name`] =
+                prediction.item_name;
+              existingUser[`${prediction.item_name}_driver_id`] =
+                prediction.driver_id;
+              existingUser[`${prediction.item_name}_driver_acronym`] =
+                prediction.driver_acronym;
+              existingUser[`${prediction.item_name}_driver_avatar`] =
+                prediction.driver_avatar;
+              existingUser[`${prediction.item_name}_team_color`] =
+                prediction.team_color;
+              existingUser[`${prediction.item_name}_group_id`] =
+                prediction.group_id;
+              existingUser[`${prediction.item_name}_points`] =
+                prediction.points;
+              existingUser.total_points =
+                (existingUser.total_points || 0) + prediction.points;
+              return acc;
+            }
+
+            // Create new user object with first prediction
+            return [
+              ...(acc as any[]),
+              {
+                id: prediction.id,
+                user_id: prediction.user_id,
+                user_name: prediction.user_name,
+                user_avatar: prediction.user_avatar,
+                [`${prediction.item_name}_name`]: prediction.item_name,
+                [`${prediction.item_name}_driver_id`]: prediction.driver_id,
+                [`${prediction.item_name}_driver_acronym`]:
+                  prediction.driver_acronym,
+                [`${prediction.item_name}_driver_avatar`]:
+                  prediction.driver_avatar,
+                [`${prediction.item_name}_team_color`]: prediction.team_color,
+                [`${prediction.item_name}_group_id`]: prediction.group_id,
+                [`${prediction.item_name}_points`]: prediction.points,
+                total_points: prediction.points,
+              },
+            ];
+          },
+          []
+        );
+
+        // Get unique item_names from gr_predictions
+        const prediction_names = [
+          ...new Set(gr_predictions.map((p) => p.item_name)),
+        ];
+
+        return {
+          ...group,
+          results: results.filter((result) => result.group_id === group.id),
+          predictions: converted_predictions,
+          prediction_names: prediction_names,
+        };
+      });
+
+      return {
+        ...event,
+        prediction_groups: groups_with_results,
+        event_user_points: event_user_points,
+      };
+    })
+  );
+
+  return data_with_groups;
+};
+
+export const fetchFinishedEvents = async () => {
+  const data = await sql<Event[]>`
+    select * from events where status = 'FINISHED' order by date desc
+  `;
+  return data;
+};
