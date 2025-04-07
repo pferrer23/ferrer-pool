@@ -143,11 +143,11 @@ export default function ResultsTable() {
               <CardBody>
                 <Table aria-label={`${group.name} predictions table`}>
                   <TableHeader>
-                    <TableColumn>User</TableColumn>
+                    <TableColumn>Usuario</TableColumn>
                     {group.prediction_names.map((name: any) => (
                       <TableColumn key={name}>{name}</TableColumn>
                     ))}
-                    <TableColumn align='end'>Points</TableColumn>
+                    <TableColumn align='end'>Puntos</TableColumn>
                   </TableHeader>
                   <TableBody>
                     {group.predictions.map((prediction: any) => (
@@ -159,7 +159,14 @@ export default function ResultsTable() {
                               alt={prediction.user_name}
                               className='hidden sm:block w-8 h-8 rounded-full'
                             />
-                            <span>{prediction.user_name}</span>
+                            <span>
+                              {prediction.user_name
+                                .split(' ')
+                                .map((n: string, i: number) =>
+                                  i === 0 ? `${n[0]}.` : n
+                                )
+                                .join(' ')}
+                            </span>
                           </div>
                         </TableCell>
                         {group.prediction_names.map((name: any) => (
