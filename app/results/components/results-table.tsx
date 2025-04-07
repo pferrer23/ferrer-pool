@@ -72,7 +72,7 @@ export default function ResultsTable() {
       </div>
       <div className='flex flex-wrap gap-2 mb-4'>
         {dashboardData[0]?.event_user_points?.map((userPoints: any) => (
-          <Card key={userPoints.user_id} className='p-2'>
+          <Card key={userPoints.user_id} className='px-4 py-2'>
             <div className='flex items-center gap-2'>
               <Avatar
                 src={userPoints.user_avatar}
@@ -81,7 +81,12 @@ export default function ResultsTable() {
               />
               <div className='flex flex-col'>
                 <span className='text-sm font-medium'>
-                  {userPoints.user_name}
+                  {userPoints.user_name
+                    .split(' ')
+                    .map((part: string, i: number, arr: string[]) =>
+                      i === arr.length - 1 ? part : part[0] + '.'
+                    )
+                    .join(' ')}
                 </span>
                 <span className='text-xs text-gray-500'>
                   {userPoints.points} pts
