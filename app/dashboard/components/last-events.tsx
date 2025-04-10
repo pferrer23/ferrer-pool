@@ -1,11 +1,20 @@
 'use client';
 
-import { Accordion, AccordionItem, Avatar } from '@heroui/react';
+import {
+  Accordion,
+  AccordionItem,
+  Avatar,
+  Chip,
+  Card,
+  CardHeader,
+  CardBody,
+} from '@heroui/react';
 import { Event, EventResultDetailed } from '@/app/lib/definitions';
 import Image from 'next/image';
+import clsx from 'clsx';
 
 type EventWithResults = Event & {
-  results: EventResultDetailed[];
+  results: any;
 };
 
 export default function LastEvents({ events }: { events: EventWithResults[] }) {
@@ -51,29 +60,53 @@ export default function LastEvents({ events }: { events: EventWithResults[] }) {
               </div>
             }
           >
-            <div className='p-4 flex flex-row justify-around flex-wrap gap-10'>
-              {event.results.map((result) => (
-                <div
-                  key={result.id}
-                  className='flex flex-col items-center gap-2'
-                >
-                  <h4 className='font-medium text-gray-400'>
-                    {result.pridiction_name}
-                  </h4>
-                  <div className='flex flex-col items-center gap-2'>
-                    <Avatar
-                      isBordered
-                      radius='md'
-                      src={result.driver_headshot_url}
-                      alt={result.driver_name}
-                      size='sm'
-                    />
-                    <span className='px-2 py-1 text-xs rounded-md bg-primary-800'>
-                      {result.driver_acronym}
-                    </span>
+            <div className='p-4 flex flex-row justify-around flex-wrap gap-5'>
+              {Object.entries(event.results).map(
+                ([groupName, results]: [string, any]) => (
+                  <div
+                    key={groupName}
+                    className='bg-background-900 p-3 rounded-lg border border-background-800 w-full max-w-sm'
+                  >
+                    <div className='mb-2'>
+                      <h4 className='font-medium'>{groupName}</h4>
+                    </div>
+                    <div className='flex flex-row flex-wrap justify-around gap-4'>
+                      {results.map((result: any) => (
+                        <div
+                          key={result.id}
+                          className='flex flex-col items-center gap-2'
+                        >
+                          <h4 className='font-medium text-gray-400'>
+                            {result.pridiction_name}
+                          </h4>
+                          <div className='flex flex-col items-center gap-2'>
+                            <Avatar
+                              isBordered
+                              radius='md'
+                              src={result.driver_headshot_url}
+                              alt={result.driver_name}
+                              size='sm'
+                            />
+                            <Chip
+                              classNames={{
+                                content: clsx(
+                                  'text-white text-xs sm:text-sm',
+                                  'font-semibold'
+                                ),
+                                dot: `bg-[#${result.team_color}]`,
+                              }}
+                              size='sm'
+                              variant='dot'
+                            >
+                              {result.driver_acronym}
+                            </Chip>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </AccordionItem>
         ))}

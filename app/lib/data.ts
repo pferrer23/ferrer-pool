@@ -86,7 +86,9 @@ export async function fetchLastEvents() {
           d.name_acronym driver_acronym,
           d.headshot_url driver_headshot_url,
           t.name team_name,
-          t.car_image team_image_url
+          t.car_image team_image_url,
+          coalesce(t.colour, t_d.colour) team_color,
+          pg.name group_name
         from
           event_results er
         left join drivers d on
@@ -95,14 +97,26 @@ export async function fetchLastEvents() {
           er.team_id = t.id
         left join prediction_group_items pgi on
           er.prediction_group_item_id = pgi.id
+        left join prediction_groups pg on pg.id = pgi.prediction_group_id
+        left join teams t_d on t_d.id = d.team_id
         where
           event_id = ${event.id}
         order by
-          pgi.id
+          pg.id, pgi.id
       `;
+
+      // Group results by group_name
+      const groupedResults = results.reduce((acc, result) => {
+        if (!acc[result.group_name]) {
+          acc[result.group_name] = [];
+        }
+        acc[result.group_name].push(result);
+        return acc;
+      }, {} as Record<string, EventResultDetailed[]>);
+
       return {
         ...event,
-        results,
+        results: groupedResults,
       };
     })
   );

@@ -89,7 +89,9 @@ export type EventResultDetailed = EventResult & {
   driver_headshot_url: string;
   team_name: string;
   team_image_url: string;
+  team_color: string;
   position: number | null;
+  group_name: string;
 };
 
 export type SeasonResult = {
