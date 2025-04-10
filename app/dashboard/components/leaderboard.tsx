@@ -33,11 +33,11 @@ export default async function Leaderboard() {
             />
             <h3 className='text-xl font-semibold text-gray-100'>{item.name}</h3>
           </div>
-          <p className='text-4xl font-bold text-gray-50'>{item.points}</p>
-          <div className='flex items-center mt-2'>
+          <div className='flex items-center gap-2'>
             <span className='text-gray-400 text-4xl'>
               {getPositionEmoji(item.position)}
             </span>
+            <p className='text-4xl font-bold text-gray-50'>{item.points}</p>
           </div>
         </div>
       ))}

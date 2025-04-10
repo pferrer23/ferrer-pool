@@ -18,6 +18,7 @@ import {
   EventPredictionsConfig,
   UserResultByEvent,
   UserPointsByEvent,
+  CumulativePoints,
 } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -509,6 +510,37 @@ export const fetchEventDashboardData = async (eventId: number) => {
 export const fetchFinishedEvents = async () => {
   const data = await sql<Event[]>`
     select * from events where status = 'FINISHED' order by date desc
+  `;
+  return data;
+};
+
+export const fetchCumulativePoints = async () => {
+  const data = await sql<CumulativePoints[]>`
+    WITH summarized AS (
+      SELECT
+        user_id,
+        u.name user_name,
+        event_id,
+        e.name event_name,
+        SUM(points) AS event_points
+      FROM user_predictions up inner join events e on e.id = up.event_id
+      inner join users u on u.id = up.user_id
+      where e.status = 'FINISHED'
+      GROUP BY user_id, event_id, e.name, u.name
+    )
+    SELECT
+      user_id,
+      user_name,
+      event_id,
+      event_name,
+      event_points,
+      SUM(event_points) OVER (
+        PARTITION BY user_id
+        ORDER BY event_id
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+      ) AS cumulative_points
+    FROM summarized
+    ORDER BY user_id, event_id;
   `;
   return data;
 };

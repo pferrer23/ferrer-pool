@@ -183,3 +183,12 @@ export type UserPointsByEvent = {
   user_avatar: string;
   points: number;
 };
+
+export type CumulativePoints = {
+  user_id: number;
+  user_name: string;
+  event_id: number;
+  event_name: string;
+  event_points: number;
+  cumulative_points: number;
+};
