@@ -517,13 +517,13 @@ export const fetchEventDashboardData = async (eventId: number) => {
       };
     })
   );
-
+  console.log(data_with_groups);
   return data_with_groups;
 };
 
 export const fetchFinishedEvents = async () => {
   const data = await sql<Event[]>`
-    select * from events where status = 'FINISHED' order by date desc
+    select * from events where status = 'FINISHED' or quali_start_at < NOW() order by date desc
   `;
   return data;
 };

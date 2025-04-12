@@ -96,117 +96,111 @@ export default function ResultsTable() {
           </Card>
         ))}
       </div>
-      {dashboardData[0]?.prediction_groups.map(
-        (group: any) =>
-          group.results.length > 0 && (
-            <Card key={group.id}>
-              <CardHeader>
-                <div className='flex flex-col md:flex-row gap-4 items-start md:items-center md:justify-between w-full px-3'>
-                  <h3 className='text-xl font-bold'>{group.name}</h3>
-                  <div className='flex flex-col md:flex-row gap-2 w-full md:w-auto md:ml-auto'>
-                    <span className='text-lg text-gray-500'>Resultados</span>
-                    <div className='flex flex-wrap gap-2'>
-                      {group.results.map((result: any) => (
-                        <div
-                          key={result.id}
-                          className='flex items-center gap-2'
+      {dashboardData[0]?.prediction_groups.map((group: any) => (
+        <Card key={group.id}>
+          <CardHeader>
+            <div className='flex flex-col md:flex-row gap-4 items-start md:items-center md:justify-between w-full px-3'>
+              <h3 className='text-xl font-bold'>{group.name}</h3>
+              {group.results.length > 0 && (
+                <div className='flex flex-col md:flex-row gap-2 w-full md:w-auto md:ml-auto'>
+                  <span className='text-lg text-gray-500'>Resultados</span>
+                  <div className='flex flex-wrap gap-2'>
+                    {group.results.map((result: any) => (
+                      <div key={result.id} className='flex items-center gap-2'>
+                        <span className='font-medium text-sm'>
+                          {result.item_name}:
+                        </span>
+                        {result.driver_avatar && (
+                          <img
+                            src={result.driver_avatar}
+                            alt={result.driver_acronym}
+                            className='hidden sm:block w-8 h-8 rounded-full'
+                          />
+                        )}
+                        <Chip
+                          classNames={{
+                            content: clsx(
+                              'text-white text-xs sm:text-sm',
+                              'font-semibold'
+                            ),
+                            dot: `bg-[#${result.team_color}]`,
+                          }}
+                          size='sm'
+                          variant='dot'
                         >
-                          <span className='font-medium text-sm'>
-                            {result.item_name}:
-                          </span>
-                          {result.driver_avatar && (
+                          {result.driver_acronym}
+                        </Chip>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label={`${group.name} predictions table`}>
+              <TableHeader>
+                <TableColumn>Usuario</TableColumn>
+                {group.prediction_names.map((name: any) => (
+                  <TableColumn key={name}>{name}</TableColumn>
+                ))}
+                <TableColumn align='end'>Puntos</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {group.predictions.map((prediction: any) => (
+                  <TableRow key={`${prediction.user_id}`}>
+                    <TableCell>
+                      <div className='flex items-center gap-2'>
+                        <img
+                          src={prediction.user_avatar}
+                          alt={prediction.user_name}
+                          className='hidden sm:block w-8 h-8 rounded-full'
+                        />
+                        <span>
+                          {prediction.user_name
+                            .split(' ')
+                            .map((n: string, i: number) =>
+                              i === 0 ? `${n[0]}.` : n
+                            )
+                            .join(' ')}
+                        </span>
+                      </div>
+                    </TableCell>
+                    {group.prediction_names.map((name: any) => (
+                      <TableCell key={name}>
+                        <div className='flex items-center gap-2'>
+                          {prediction[`${name}_driver_avatar`] && (
                             <img
-                              src={result.driver_avatar}
-                              alt={result.driver_acronym}
+                              src={prediction[`${name}_driver_avatar`]}
+                              alt={prediction[`${name}_driver_acronym`]}
                               className='hidden sm:block w-8 h-8 rounded-full'
                             />
                           )}
                           <Chip
                             classNames={{
-                              content: clsx(
-                                'text-white text-xs sm:text-sm',
-                                'font-semibold'
-                              ),
-                              dot: `bg-[#${result.team_color}]`,
+                              content: clsx('text-white', 'font-semibold'),
+                              dot: `bg-[#${prediction[`${name}_team_color`]}]`,
                             }}
                             size='sm'
                             variant='dot'
                           >
-                            {result.driver_acronym}
+                            {prediction[`${name}_driver_acronym`]}
                           </Chip>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardBody>
-                <Table aria-label={`${group.name} predictions table`}>
-                  <TableHeader>
-                    <TableColumn>Usuario</TableColumn>
-                    {group.prediction_names.map((name: any) => (
-                      <TableColumn key={name}>{name}</TableColumn>
+                      </TableCell>
                     ))}
-                    <TableColumn align='end'>Puntos</TableColumn>
-                  </TableHeader>
-                  <TableBody>
-                    {group.predictions.map((prediction: any) => (
-                      <TableRow key={`${prediction.user_id}`}>
-                        <TableCell>
-                          <div className='flex items-center gap-2'>
-                            <img
-                              src={prediction.user_avatar}
-                              alt={prediction.user_name}
-                              className='hidden sm:block w-8 h-8 rounded-full'
-                            />
-                            <span>
-                              {prediction.user_name
-                                .split(' ')
-                                .map((n: string, i: number) =>
-                                  i === 0 ? `${n[0]}.` : n
-                                )
-                                .join(' ')}
-                            </span>
-                          </div>
-                        </TableCell>
-                        {group.prediction_names.map((name: any) => (
-                          <TableCell key={name}>
-                            <div className='flex items-center gap-2'>
-                              {prediction[`${name}_driver_avatar`] && (
-                                <img
-                                  src={prediction[`${name}_driver_avatar`]}
-                                  alt={prediction[`${name}_driver_acronym`]}
-                                  className='hidden sm:block w-8 h-8 rounded-full'
-                                />
-                              )}
-                              <Chip
-                                classNames={{
-                                  content: clsx('text-white', 'font-semibold'),
-                                  dot: `bg-[#${
-                                    prediction[`${name}_team_color`]
-                                  }]`,
-                                }}
-                                size='sm'
-                                variant='dot'
-                              >
-                                {prediction[`${name}_driver_acronym`]}
-                              </Chip>
-                            </div>
-                          </TableCell>
-                        ))}
-                        <TableCell>
-                          <span className='font-semibold text-end'>
-                            {prediction.total_points}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardBody>
-            </Card>
-          )
-      )}
+                    <TableCell>
+                      <span className='font-semibold text-end'>
+                        {prediction.total_points}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      ))}
     </div>
   );
 }
