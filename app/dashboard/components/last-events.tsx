@@ -8,16 +8,37 @@ import {
   Card,
   CardHeader,
   CardBody,
+  Spinner,
 } from '@heroui/react';
 import { Event, EventResultDetailed } from '@/app/lib/definitions';
+import { fetchLastEvents } from '@/app/lib/data';
 import Image from 'next/image';
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 
 type EventWithResults = Event & {
   results: any;
 };
 
-export default function LastEvents({ events }: { events: EventWithResults[] }) {
+export default function LastEvents() {
+  const [events, setEvents] = useState<EventWithResults[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const data = await fetchLastEvents();
+        setEvents(data);
+      } catch (error) {
+        console.error('Error loading events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
+
   const itemClasses = {
     base: 'p-4 w-full bg-background-900',
     title: 'font-normal text-medium',
@@ -26,6 +47,10 @@ export default function LastEvents({ events }: { events: EventWithResults[] }) {
     indicator: 'text-medium',
     content: 'text-small px-2',
   };
+
+  if (loading) {
+    return <Spinner color='warning' label='Loading...' />;
+  }
 
   return (
     <div className='space-y-4'>
