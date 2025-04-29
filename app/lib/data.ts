@@ -523,7 +523,7 @@ export const fetchEventDashboardData = async (eventId: number) => {
 
 export const fetchFinishedEvents = async () => {
   const data = await sql<Event[]>`
-    select * from events where status = 'FINISHED' or quali_start_at < NOW() + INTERVAL '1 hour' order by date desc
+    select * from events where status = 'FINISHED' or quali_start_at < NOW() order by date desc
   `;
   return data;
 };
