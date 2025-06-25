@@ -174,8 +174,8 @@ export async function fetchEventPredictionsConfig() {
     inner join prediction_group_items pgi on
       pg.id = pgi.prediction_group_id
     where
-      group_type = 'RACE'
-    ORDER BY pg.id, pgi.id
+      group_type = 'RACE' and pgi.enabled = true
+    ORDER BY pgi.position, pg.id
   `;
 
   const data = await Promise.all(
@@ -523,7 +523,7 @@ export const fetchEventDashboardData = async (eventId: number) => {
 
 export const fetchFinishedEvents = async () => {
   const data = await sql<Event[]>`
-    select * from events where status = 'FINISHED' or quali_start_at < NOW() order by date desc
+    select * from events where status = 'FINISHED' or quali_start_at < NOW() + interval '1 day' order by date desc
   `;
   return data;
 };
