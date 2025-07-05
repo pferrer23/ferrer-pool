@@ -369,7 +369,7 @@ export const fetchEventDashboardData = async (eventId: number) => {
       *
     from prediction_groups
     where group_type = 'RACE'
-    order by id
+    order by position
   `;
 
   const results = await sql`

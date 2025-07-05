@@ -49,17 +49,37 @@ export default function EventResultsForm() {
     fectchData();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent, eventId: number) => {
+  const handleSubmit = async (e: React.FormEvent, eventId: number) => {
     e.preventDefault();
     const eventResults = formData.filter(
       (result) => result.event_id === eventId
     );
-    saveEventResults(eventResults);
+
+    try {
+      const result = await saveEventResults(eventResults);
+      if (result?.message) {
+        alert(result.message);
+      } else {
+        alert('Results saved and points calculated successfully');
+      }
+    } catch (error) {
+      console.error('Error saving results:', error);
+      alert('Error saving results');
+    }
   };
 
   const handleCloseEvent = async (eventId: number) => {
-    console.log('close event');
-    closeEvent(eventId);
+    try {
+      const result = await closeEvent(eventId);
+      if (result?.message) {
+        alert(result.message);
+      } else {
+        alert('Event closed successfully');
+      }
+    } catch (error) {
+      console.error('Error closing event:', error);
+      alert('Error closing event');
+    }
   };
 
   const handleChange = (
