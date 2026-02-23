@@ -20,6 +20,7 @@ import {
   UserResultByEvent,
   UserPointsByEvent,
   CumulativePoints,
+  Insight,
 } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -572,3 +573,13 @@ export const fetchCumulativePoints = async () => {
   `;
   return data;
 };
+
+export async function fetchLatestInsights(): Promise<Insight[]> {
+  const data = await sql<Insight[]>`
+    SELECT id, created_at, analysis
+    FROM insights
+    ORDER BY created_at DESC
+    LIMIT 3
+  `;
+  return data;
+}

@@ -205,3 +205,9 @@ export type CumulativePoints = {
   event_points: number;
   cumulative_points: number;
 };
+
+export type Insight = {
+  id: number;
+  created_at: string;
+  analysis: string;
+};
