@@ -1,7 +1,7 @@
 import Leaderboard from '@/app/dashboard/components/leaderboard';
 import LastEvents from '@/app/dashboard/components/last-events';
 import TrackChart from '@/app/dashboard/components/track-chart';
-import InsightsCarousel from '@/app/dashboard/components/insights-carousel';
+import InsightsList from '@/app/dashboard/components/insights-carousel';
 import { fetchLatestInsights } from '@/app/lib/data';
 
 export default async function Page() {
@@ -19,7 +19,7 @@ export default async function Page() {
 
         {/* Sidebar */}
         <aside className='lg:w-72 shrink-0'>
-          <InsightsCarousel insights={insights} />
+          <InsightsList insights={insights} />
         </aside>
       </div>
     </main>

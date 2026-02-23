@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(pnpm add:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(pnpm list:*)",
+      "WebFetch(domain:www.motorsport.com)",
+      "WebFetch(domain:the-race.com)",
+      "Bash(pnpm migrate:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
