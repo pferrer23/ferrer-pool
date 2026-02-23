@@ -115,6 +115,16 @@ export type UserPrediction = {
   updated_at: string | null;
 };
 
+export type PredictionTemplate = {
+  id?: number;
+  user_id: number;
+  prediction_group_item_id: number;
+  driver_id: number | null;
+  team_id: number | null;
+  position: number | null;
+  updated_at: string | null;
+};
+
 export type Leaderboard = {
   id: number;
   name: string;
@@ -139,6 +149,7 @@ export type SeasonPredictionsConfig = {
 export type EventPredictionsConfig = {
   id: number;
   name: string;
+  group_name: string;
   prediction_deadline: string;
   prediction_name: string;
   selection_type:

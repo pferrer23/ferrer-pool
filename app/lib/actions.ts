@@ -8,6 +8,7 @@ import {
   PredictionGroupItem,
   SeasonResult,
   UserPrediction,
+  PredictionTemplate,
 } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -55,6 +56,77 @@ export async function saveUserPredictions(
   } catch (error) {
     console.error(error);
     return { message: 'Error saving predictions', success: false };
+  }
+}
+
+// save event user predictions and update template
+export async function saveUserPredictionsAndTemplate(
+  userId: number,
+  predictions: UserPrediction[]
+) {
+  try {
+    await sql`
+    INSERT INTO user_predictions (
+      user_id,
+      event_id,
+      prediction_group_item_id,
+      driver_id,
+      team_id,
+      position
+    )
+    VALUES ${sql(
+      predictions.map(
+        (p) =>
+          [
+            userId,
+            p.event_id ?? null,
+            p.prediction_group_item_id,
+            p.driver_id ?? null,
+            p.team_id ?? null,
+            p.position ?? null,
+          ] as const
+      )
+    )}
+    ON CONFLICT (user_id, prediction_group_item_id, COALESCE(event_id, -1))
+    DO UPDATE SET
+      driver_id = EXCLUDED.driver_id,
+      team_id = EXCLUDED.team_id,
+      position = EXCLUDED.position,
+      updated_at = CURRENT_TIMESTAMP
+    `;
+
+    await sql`
+    INSERT INTO prediction_templates (
+      user_id,
+      prediction_group_item_id,
+      driver_id,
+      team_id,
+      position
+    )
+    VALUES ${sql(
+      predictions.map(
+        (p) =>
+          [
+            userId,
+            p.prediction_group_item_id,
+            p.driver_id ?? null,
+            p.team_id ?? null,
+            p.position ?? null,
+          ] as const
+      )
+    )}
+    ON CONFLICT (user_id, prediction_group_item_id)
+    DO UPDATE SET
+      driver_id = EXCLUDED.driver_id,
+      team_id = EXCLUDED.team_id,
+      position = EXCLUDED.position,
+      updated_at = CURRENT_TIMESTAMP
+    `;
+
+    return { message: 'Predictions and template saved successfully', success: true };
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error saving predictions and template', success: false };
   }
 }
 

@@ -3,6 +3,7 @@ import {
   fetchDrivers,
   fetchTeams,
   fetchEventUserPredictions,
+  fetchUserPredictionTemplate,
 } from '@/app/lib/data';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/auth.config';
@@ -16,6 +17,7 @@ export default async function EventPredictions() {
   const drivers = await fetchDrivers();
   const teams = await fetchTeams();
   const userPredictions = await fetchEventUserPredictions(userId!);
+  const templatePredictions = await fetchUserPredictionTemplate(userId!);
   return (
     <div className='space-y-4'>
       <EventPredictionsForm
@@ -23,6 +25,8 @@ export default async function EventPredictions() {
         drivers={drivers}
         teams={teams}
         userPredictions={userPredictions}
+        templatePredictions={templatePredictions}
+        hasTemplate={templatePredictions.length > 0}
       />
     </div>
   );

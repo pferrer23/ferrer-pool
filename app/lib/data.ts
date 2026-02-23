@@ -12,6 +12,7 @@ import {
   EventResult,
   SeasonResult,
   UserPrediction,
+  PredictionTemplate,
   Leaderboard,
   SeasonPredictionsConfig,
   EventResultDetailed,
@@ -37,6 +38,11 @@ export async function fetchDrivers() {
 
 export async function fetchTeams() {
   const data = await sql<Team[]>`SELECT * FROM teams ORDER BY id ASC`;
+  return data;
+}
+
+export async function fetchEvents() {
+  const data = await sql<Event[]>`SELECT * FROM events ORDER BY date ASC`;
   return data;
 }
 
@@ -235,6 +241,14 @@ export async function fetchEventUserPredictions(userId: number) {
   const data = await sql<
     UserPrediction[]
   >`select * from user_predictions where user_id = ${userId} and event_id is not null`;
+  return data;
+}
+
+// user prediction template
+export async function fetchUserPredictionTemplate(userId: number) {
+  const data = await sql<
+    PredictionTemplate[]
+  >`select * from prediction_templates where user_id = ${userId}`;
   return data;
 }
 
