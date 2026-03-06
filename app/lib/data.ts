@@ -629,3 +629,147 @@ export async function fetchVirtualSeasonPoints(): Promise<VirtualSeasonPoints[]>
   `;
   return data;
 }
+
+export async function fetchSeasonReviewData() {
+  const groupsAndItems = await sql`
+    SELECT
+      pg.id group_id, pg.name group_name, pg.position group_position, pg.prediction_deadline,
+      pgi.id item_id, pgi.name item_name, pgi.selection_type, pgi.position item_position,
+      sr.driver_id result_driver_id, sr.team_id result_team_id, sr.position result_position,
+      d.name_acronym result_driver_acronym, d.headshot_url result_driver_avatar,
+      t.colour result_team_color, t.name result_team_name
+    FROM prediction_groups pg
+    JOIN prediction_group_items pgi ON pg.id = pgi.prediction_group_id
+    LEFT JOIN season_results sr ON sr.prediction_group_item_id = pgi.id
+    LEFT JOIN drivers d ON d.id = sr.driver_id
+    LEFT JOIN teams t ON t.id = COALESCE(sr.team_id, d.team_id)
+    WHERE pg.group_type = 'SEASON'
+    ORDER BY pg.position, pgi.position
+  `;
+
+  const userPredictions = await sql`
+    SELECT
+      up.user_id, u.name user_name, u.profile_image user_avatar,
+      up.prediction_group_item_id item_id,
+      up.driver_id, up.team_id, up.position,
+      d.name_acronym driver_acronym, d.headshot_url driver_avatar,
+      t.colour team_color, t.name team_name,
+      pgi.prediction_group_id group_id
+    FROM user_predictions up
+    JOIN users u ON u.id = up.user_id
+    JOIN prediction_group_items pgi ON up.prediction_group_item_id = pgi.id
+    JOIN prediction_groups pg ON pgi.prediction_group_id = pg.id
+    LEFT JOIN drivers d ON d.id = up.driver_id
+    LEFT JOIN teams t ON t.id = COALESCE(up.team_id, d.team_id)
+    WHERE up.event_id IS NULL AND pg.group_type = 'SEASON'
+    ORDER BY u.id, pgi.position
+  `;
+
+  const virtualPoints = await sql`
+    SELECT
+      up.user_id,
+      up.prediction_group_item_id item_id,
+      SUM(
+        CASE
+          WHEN pd.type = 'EXACT' AND (
+            (pgi.selection_type IN ('DRIVER_UNIQUE','DRIVER_MULTIPLE') AND up.driver_id = sr.driver_id) OR
+            (pgi.selection_type IN ('TEAM_UNIQUE','TEAM_MULTIPLE') AND up.team_id = sr.team_id) OR
+            (pgi.selection_type = 'POSITION' AND up.position = sr.position)
+          ) THEN pd.points
+          WHEN pd.type = 'ANY_IN_ITEMS' AND EXISTS (
+            SELECT 1 FROM season_results sr2
+            JOIN prediction_group_items pgi2 ON sr2.prediction_group_item_id = pgi2.id
+            WHERE pgi2.prediction_group_id = pg.id
+            AND (
+              (pgi.selection_type IN ('DRIVER_UNIQUE','DRIVER_MULTIPLE') AND sr2.driver_id = up.driver_id) OR
+              (pgi.selection_type IN ('TEAM_UNIQUE','TEAM_MULTIPLE') AND sr2.team_id = up.team_id) OR
+              (pgi.selection_type = 'POSITION' AND sr2.position = up.position)
+            )
+          ) THEN pd.points
+          ELSE 0
+        END
+      )::integer as virtual_points
+    FROM user_predictions up
+    JOIN prediction_group_items pgi ON up.prediction_group_item_id = pgi.id
+    JOIN prediction_groups pg ON pgi.prediction_group_id = pg.id
+    JOIN points_definitions pd ON pg.id = pd.prediction_group_id
+    JOIN season_results sr ON sr.prediction_group_item_id = up.prediction_group_item_id
+    WHERE up.event_id IS NULL AND pg.group_type = 'SEASON'
+    GROUP BY up.user_id, up.prediction_group_item_id
+  `;
+
+  const maxPoints = await sql`
+    SELECT pgi.id item_id, SUM(pd.points)::integer max_points
+    FROM prediction_group_items pgi
+    JOIN prediction_groups pg ON pgi.prediction_group_id = pg.id
+    JOIN points_definitions pd ON pg.id = pd.prediction_group_id
+    WHERE pg.group_type = 'SEASON'
+    GROUP BY pgi.id
+  `;
+
+  const vpMap = new Map<string, number>();
+  virtualPoints.forEach((vp: any) => {
+    vpMap.set(`${vp.item_id}_${vp.user_id}`, vp.virtual_points);
+  });
+
+  const maxMap = new Map<number, number>();
+  maxPoints.forEach((mp: any) => {
+    maxMap.set(mp.item_id, mp.max_points);
+  });
+
+  const predMap = new Map<string, any>();
+  userPredictions.forEach((p: any) => {
+    predMap.set(`${p.item_id}_${p.user_id}`, p);
+  });
+
+  const usersMap = new Map<number, any>();
+  userPredictions.forEach((p: any) => {
+    if (!usersMap.has(p.user_id)) {
+      usersMap.set(p.user_id, {
+        user_id: p.user_id,
+        user_name: p.user_name,
+        user_avatar: p.user_avatar,
+      });
+    }
+  });
+  const users = Array.from(usersMap.values());
+
+  const groupMap = new Map<number, any>();
+  groupsAndItems.forEach((row: any) => {
+    if (!groupMap.has(row.group_id)) {
+      groupMap.set(row.group_id, {
+        id: row.group_id,
+        name: row.group_name,
+        position: row.group_position,
+        prediction_deadline: row.prediction_deadline,
+        items: [],
+      });
+    }
+    groupMap.get(row.group_id).items.push({
+      id: row.item_id,
+      name: row.item_name,
+      selection_type: row.selection_type,
+      result: row.result_driver_id || row.result_team_id || row.result_position
+        ? {
+            driver_acronym: row.result_driver_acronym,
+            driver_avatar: row.result_driver_avatar,
+            team_color: row.result_team_color,
+            team_name: row.result_team_name,
+            position: row.result_position,
+          }
+        : null,
+      max_points: maxMap.get(row.item_id) ?? 0,
+    });
+  });
+
+  const groups = Array.from(groupMap.values()).sort(
+    (a: any, b: any) => a.position - b.position
+  );
+
+  return {
+    groups,
+    users,
+    predictions: Object.fromEntries(predMap),
+    virtualPoints: Object.fromEntries(vpMap),
+  };
+}

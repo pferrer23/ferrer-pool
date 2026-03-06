@@ -3,7 +3,7 @@
 import React from 'react';
 import { Tabs, Tab } from '@heroui/react';
 import ResultsTable from './components/results-table';
-import PointsByEventTable from './components/points-by-event-table';
+import SeasonReviewTable from './components/season-review-table';
 
 export default function ResultsPage() {
   const [selected, setSelected] = React.useState('results');
@@ -20,8 +20,8 @@ export default function ResultsPage() {
           <Tab key='results' title='Ultimos Resultados'>
             <ResultsTable />
           </Tab>
-          <Tab key='points' title='Puntos por Evento'>
-            <PointsByEventTable />
+          <Tab key='season' title='Temporada'>
+            <SeasonReviewTable />
           </Tab>
         </Tabs>
       </div>
