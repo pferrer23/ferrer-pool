@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchLeaderboard } from '@/app/lib/data';
+import { fetchLeaderboard, fetchVirtualSeasonPoints } from '@/app/lib/data';
 import { Avatar, Spinner } from '@heroui/react';
 
 export default function Leaderboard() {
@@ -11,8 +11,15 @@ export default function Leaderboard() {
   useEffect(() => {
     const loadLeaderboard = async () => {
       try {
-        const data = await fetchLeaderboard();
-        setLeaderboard(data);
+        const [data, virtualPoints] = await Promise.all([
+          fetchLeaderboard(),
+          fetchVirtualSeasonPoints(),
+        ]);
+        const merged = data.map((item: any) => {
+          const vp = virtualPoints.find((v: any) => v.user_id === item.id);
+          return { ...item, virtual_points: vp?.virtual_points ?? 0 };
+        });
+        setLeaderboard(merged);
       } catch (error) {
         console.error('Error loading leaderboard:', error);
       } finally {
@@ -60,7 +67,12 @@ export default function Leaderboard() {
             <span className='text-gray-400 text-4xl'>
               {getPositionEmoji(item.position)}
             </span>
-            <p className='text-4xl font-bold text-gray-50'>{item.points}</p>
+            <p className='text-4xl font-bold text-gray-50'>
+              {item.points}
+              {item.virtual_points > 0 && (
+                <span className='text-lg text-yellow-400 ml-2'>+{item.virtual_points}</span>
+              )}
+            </p>
           </div>
         </div>
       ))}

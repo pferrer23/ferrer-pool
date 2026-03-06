@@ -21,6 +21,7 @@ import {
   UserPointsByEvent,
   CumulativePoints,
   Insight,
+  VirtualSeasonPoints,
 } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -581,6 +582,50 @@ export async function fetchLatestInsights(): Promise<Insight[]> {
     FROM insights
     ORDER BY created_at DESC
     LIMIT 3
+  `;
+  return data;
+}
+
+export async function fetchVirtualSeasonPoints(): Promise<VirtualSeasonPoints[]> {
+  const data = await sql<VirtualSeasonPoints[]>`
+    SELECT
+      u.id as user_id,
+      COALESCE(SUM(vp.virtual_points), 0)::integer as virtual_points
+    FROM users u
+    LEFT JOIN (
+      SELECT
+        up.user_id,
+        up.prediction_group_item_id,
+        SUM(
+          CASE
+            WHEN pd.type = 'EXACT' AND (
+              (pgi.selection_type IN ('DRIVER_UNIQUE','DRIVER_MULTIPLE') AND up.driver_id = sr.driver_id) OR
+              (pgi.selection_type IN ('TEAM_UNIQUE','TEAM_MULTIPLE') AND up.team_id = sr.team_id) OR
+              (pgi.selection_type = 'POSITION' AND up.position = sr.position)
+            ) THEN pd.points
+            WHEN pd.type = 'ANY_IN_ITEMS' AND EXISTS (
+              SELECT 1 FROM season_results sr2
+              JOIN prediction_group_items pgi2 ON sr2.prediction_group_item_id = pgi2.id
+              WHERE pgi2.prediction_group_id = pg.id
+              AND (
+                (pgi.selection_type IN ('DRIVER_UNIQUE','DRIVER_MULTIPLE') AND sr2.driver_id = up.driver_id) OR
+                (pgi.selection_type IN ('TEAM_UNIQUE','TEAM_MULTIPLE') AND sr2.team_id = up.team_id) OR
+                (pgi.selection_type = 'POSITION' AND sr2.position = up.position)
+              )
+            ) THEN pd.points
+            ELSE 0
+          END
+        ) as virtual_points
+      FROM user_predictions up
+      JOIN prediction_group_items pgi ON up.prediction_group_item_id = pgi.id
+      JOIN prediction_groups pg ON pgi.prediction_group_id = pg.id
+      JOIN points_definitions pd ON pg.id = pd.prediction_group_id
+      JOIN season_results sr ON sr.prediction_group_item_id = up.prediction_group_item_id
+      WHERE up.event_id IS NULL
+        AND pg.group_type = 'SEASON'
+      GROUP BY up.user_id, up.prediction_group_item_id
+    ) vp ON u.id = vp.user_id
+    GROUP BY u.id
   `;
   return data;
 }

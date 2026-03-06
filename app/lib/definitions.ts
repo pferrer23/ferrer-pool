@@ -133,6 +133,11 @@ export type Leaderboard = {
   profile_image_url: string;
 };
 
+export type VirtualSeasonPoints = {
+  user_id: number;
+  virtual_points: number;
+};
+
 export type SeasonPredictionsConfig = {
   id: number;
   prediction_group_id: number;
