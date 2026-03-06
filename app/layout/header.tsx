@@ -16,6 +16,7 @@ export default function Header() {
                 width={150}
                 height={40}
                 priority
+                unoptimized
               />
             </Link>
           </div>

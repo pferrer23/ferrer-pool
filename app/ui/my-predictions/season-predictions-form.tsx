@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Select,
   SelectItem,
@@ -25,6 +25,13 @@ interface SeasonPredictionsFormProps {
   userPredictions: UserPrediction[];
 }
 
+type PredictionGroup = {
+  prediction_group_id: number;
+  group_name: string;
+  prediction_deadline: string;
+  items: SeasonPredictionsConfig[];
+};
+
 export default function SeasonPredictionsForm({
   predictions,
   drivers,
@@ -36,11 +43,45 @@ export default function SeasonPredictionsForm({
 
   const [formData, setFormData] = useState<UserPrediction[]>(userPredictions);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const groups = useMemo(() => {
+    const map = new Map<number, PredictionGroup>();
+    for (const p of predictions) {
+      if (!map.has(p.prediction_group_id)) {
+        map.set(p.prediction_group_id, {
+          prediction_group_id: p.prediction_group_id,
+          group_name: p.group_name,
+          prediction_deadline: p.prediction_deadline,
+          items: [],
+        });
+      }
+      map.get(p.prediction_group_id)!.items.push(p);
+    }
+    return Array.from(map.values());
+  }, [predictions]);
+
+  const isExpired = (deadline: string) => {
+    if (!deadline) return false;
+    return new Date() > new Date(deadline);
+  };
+
+  const formatDeadline = (deadline: string) => {
+    if (!deadline) return '';
+    return new Date(deadline).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const handleSubmit = (groupItems: SeasonPredictionsConfig[]) => (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
-    saveUserPredictions(userId!, formData);
+    const groupItemIds = new Set(groupItems.map((i) => i.id));
+    const groupPredictions = formData.filter((p) =>
+      groupItemIds.has(p.prediction_group_item_id)
+    );
+    saveUserPredictions(userId!, groupPredictions);
   };
 
   const handleChange = (
@@ -51,42 +92,22 @@ export default function SeasonPredictionsForm({
       (p) => p.prediction_group_item_id === prediction.id
     );
 
-    let updatedPrediction: UserPrediction;
-    if (existingPrediction) {
-      updatedPrediction = {
-        ...existingPrediction,
-        driver_id: prediction.selection_type.startsWith('DRIVER')
-          ? Number(value)
-          : null,
-        team_id: prediction.selection_type.startsWith('TEAM')
-          ? Number(value)
-          : null,
-        position:
-          prediction.selection_type === 'POSITION' ? Number(value) : null,
-        user_id: userId!,
-        event_id: null,
-        finished: false,
-        points: 0,
-        updated_at: null,
-      };
-    } else {
-      updatedPrediction = {
-        prediction_group_item_id: prediction.id,
-        driver_id: prediction.selection_type.startsWith('DRIVER')
-          ? Number(value)
-          : null,
-        team_id: prediction.selection_type.startsWith('TEAM')
-          ? Number(value)
-          : null,
-        position:
-          prediction.selection_type === 'POSITION' ? Number(value) : null,
-        user_id: userId!,
-        event_id: null,
-        finished: false,
-        points: 0,
-        updated_at: null,
-      };
-    }
+    const updatedPrediction: UserPrediction = {
+      prediction_group_item_id: prediction.id,
+      driver_id: prediction.selection_type.startsWith('DRIVER')
+        ? Number(value)
+        : null,
+      team_id: prediction.selection_type.startsWith('TEAM')
+        ? Number(value)
+        : null,
+      position:
+        prediction.selection_type === 'POSITION' ? Number(value) : null,
+      user_id: userId!,
+      event_id: null,
+      finished: false,
+      points: 0,
+      updated_at: null,
+    };
 
     setFormData((prev) => {
       if (existingPrediction) {
@@ -98,7 +119,7 @@ export default function SeasonPredictionsForm({
     });
   };
 
-  const renderField = (prediction: SeasonPredictionsConfig) => {
+  const renderField = (prediction: SeasonPredictionsConfig, disabled: boolean) => {
     switch (prediction.selection_type) {
       case 'DRIVER_UNIQUE':
       case 'DRIVER_MULTIPLE':
@@ -107,6 +128,7 @@ export default function SeasonPredictionsForm({
             className='w-full'
             variant='bordered'
             size='sm'
+            isDisabled={disabled}
             selectedKeys={[
               formData
                 .find((p) => p.prediction_group_item_id === prediction.id)
@@ -127,6 +149,7 @@ export default function SeasonPredictionsForm({
             className='w-full'
             variant='bordered'
             size='sm'
+            isDisabled={disabled}
             selectedKeys={[
               formData
                 .find((p) => p.prediction_group_item_id === prediction.id)
@@ -146,6 +169,7 @@ export default function SeasonPredictionsForm({
             type='number'
             min={1}
             max={20}
+            isDisabled={disabled}
             value={
               formData
                 .find((p) => p.prediction_group_item_id === prediction.id)
@@ -166,22 +190,40 @@ export default function SeasonPredictionsForm({
 
   return (
     <Accordion variant='splitted'>
-      <AccordionItem aria-label={'season'} title={'Temporada'}>
-        <form onSubmit={handleSubmit} className='space-y-6'>
-          {predictions.map((prediction) => (
-            <div key={prediction.id} className='space-y-2'>
-              <label className='block text-sm font-medium'>
-                {prediction.prediction_name}
-              </label>
-              {renderField(prediction)}
-            </div>
-          ))}
+      {groups.map((group) => {
+        const expired = isExpired(group.prediction_deadline);
+        return (
+          <AccordionItem
+            key={group.prediction_group_id}
+            aria-label={group.group_name}
+            title={group.group_name}
+            subtitle={
+              group.prediction_deadline
+                ? expired
+                  ? `Cerrado: ${formatDeadline(group.prediction_deadline)}`
+                  : `Fecha limite: ${formatDeadline(group.prediction_deadline)}`
+                : undefined
+            }
+          >
+            <form onSubmit={handleSubmit(group.items)} className='space-y-6'>
+              {group.items.map((prediction) => (
+                <div key={prediction.id} className='space-y-2'>
+                  <label className='block text-sm font-medium'>
+                    {prediction.prediction_name}
+                  </label>
+                  {renderField(prediction, expired)}
+                </div>
+              ))}
 
-          <Button type='submit' className='w-full'>
-            Guardar Predicciones
-          </Button>
-        </form>
-      </AccordionItem>
+              {!expired && (
+                <Button type='submit' className='w-full'>
+                  Guardar Predicciones
+                </Button>
+              )}
+            </form>
+          </AccordionItem>
+        );
+      })}
     </Accordion>
   );
 }

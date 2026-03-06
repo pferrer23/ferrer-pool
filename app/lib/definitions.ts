@@ -135,6 +135,7 @@ export type Leaderboard = {
 
 export type SeasonPredictionsConfig = {
   id: number;
+  prediction_group_id: number;
   group_name: string;
   prediction_deadline: string;
   prediction_name: string;

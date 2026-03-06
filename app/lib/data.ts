@@ -136,6 +136,7 @@ export async function fetchSeasonPredictionsConfig() {
   const data = await sql<SeasonPredictionsConfig[]>`
   select
     pgi.id,
+    pg.id prediction_group_id,
     pg."name" group_name,
     pg.prediction_deadline,
     pgi.name prediction_name,

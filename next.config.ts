@@ -2,7 +2,10 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['media.formula1.com', 'cdn-icons-png.flaticon.com'],
+    remotePatterns: [
+      { hostname: 'media.formula1.com' },
+      { hostname: 'cdn-icons-png.flaticon.com' },
+    ],
   },
 };
 

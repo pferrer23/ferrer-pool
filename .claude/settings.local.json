@@ -8,7 +8,15 @@
       "WebFetch(domain:the-race.com)",
       "Bash(pnpm migrate:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh api:*)",
+      "Bash(node -e \":*)",
+      "Bash(mv public/images/ferrer.png public/images/ferrer_original.png)",
+      "Bash(mv public/images/ferrer_fixed.png public/images/ferrer.png)",
+      "Bash(node -e \"console.log\\(require\\(''next/package.json''\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\(''sharp''\\).versions\\)\")"
     ]
   }
 }
