@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import {
-  Select,
-  SelectItem,
+  Autocomplete,
+  AutocompleteItem,
   Input,
   Button,
   Accordion,
@@ -124,43 +124,49 @@ export default function SeasonPredictionsForm({
       case 'DRIVER_UNIQUE':
       case 'DRIVER_MULTIPLE':
         return (
-          <Select
+          <Autocomplete
             className='w-full'
             variant='bordered'
             size='sm'
             isDisabled={disabled}
-            selectedKeys={[
+            selectedKey={
               formData
                 .find((p) => p.prediction_group_item_id === prediction.id)
-                ?.driver_id?.toString() || '',
-            ]}
-            onChange={(e) => handleChange(prediction, e.target.value)}
+                ?.driver_id?.toString() ?? null
+            }
+            onSelectionChange={(key) =>
+              key && handleChange(prediction, key)
+            }
           >
             {drivers.map((driver) => (
-              <SelectItem key={driver.id}>{driver.full_name}</SelectItem>
+              <AutocompleteItem key={driver.id}>
+                {driver.full_name}
+              </AutocompleteItem>
             ))}
-          </Select>
+          </Autocomplete>
         );
 
       case 'TEAM_UNIQUE':
       case 'TEAM_MULTIPLE':
         return (
-          <Select
+          <Autocomplete
             className='w-full'
             variant='bordered'
             size='sm'
             isDisabled={disabled}
-            selectedKeys={[
+            selectedKey={
               formData
                 .find((p) => p.prediction_group_item_id === prediction.id)
-                ?.team_id?.toString() || '',
-            ]}
-            onChange={(e) => handleChange(prediction, e.target.value)}
+                ?.team_id?.toString() ?? null
+            }
+            onSelectionChange={(key) =>
+              key && handleChange(prediction, key)
+            }
           >
             {teams.map((team) => (
-              <SelectItem key={team.id}>{team.name}</SelectItem>
+              <AutocompleteItem key={team.id}>{team.name}</AutocompleteItem>
             ))}
-          </Select>
+          </Autocomplete>
         );
 
       case 'POSITION':
