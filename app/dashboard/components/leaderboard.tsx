@@ -15,10 +15,18 @@ export default function Leaderboard() {
           fetchLeaderboard(),
           fetchVirtualSeasonPoints(),
         ]);
-        const merged = data.map((item: any) => {
-          const vp = virtualPoints.find((v: any) => v.user_id === item.id);
-          return { ...item, virtual_points: vp?.virtual_points ?? 0 };
-        });
+        const merged = data
+          .map((item: any) => {
+            const vp = virtualPoints.find((v: any) => v.user_id === item.id);
+            const virtual_points = Number(vp?.virtual_points ?? 0);
+            return {
+              ...item,
+              virtual_points,
+              total_points: Number(item.points) + virtual_points,
+            };
+          })
+          .sort((a: any, b: any) => b.total_points - a.total_points)
+          .map((item: any, index: number) => ({ ...item, position: index + 1 }));
         setLeaderboard(merged);
       } catch (error) {
         console.error('Error loading leaderboard:', error);
@@ -68,7 +76,7 @@ export default function Leaderboard() {
               {getPositionEmoji(item.position)}
             </span>
             <p className='text-4xl font-bold text-gray-50'>
-              {Number(item.points) + Number(item.virtual_points)}
+              {item.total_points}
             </p>
           </div>
           <div className='mt-3 flex flex-wrap gap-2'>
