@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   EventsWithPredictionsConfig,
   EventPredictionsConfig,
@@ -13,8 +13,6 @@ import { useSession } from 'next-auth/react';
 import {
   Accordion,
   AccordionItem,
-  Autocomplete,
-  AutocompleteItem,
   Input,
   Button,
   Chip,
@@ -24,6 +22,7 @@ import {
   saveUserPredictions,
   saveUserPredictionsAndTemplate,
 } from '@/app/lib/actions';
+import PredictionPicker, { PickerOption } from './prediction-picker';
 
 interface EventPredictionsFormProps {
   predictions: EventsWithPredictionsConfig[];
@@ -48,6 +47,32 @@ export default function EventPredictionsForm({
   const [localHasTemplate, setLocalHasTemplate] = useState(hasTemplate);
   const session = useSession();
   const userId = session?.data?.user?.id;
+
+  const driverOptions = useMemo<PickerOption[]>(
+    () =>
+      drivers.map((driver) => {
+        const team = teams.find((t) => t.id === driver.team_id);
+        return {
+          key: driver.id.toString(),
+          label: driver.name_acronym,
+          sublabel: driver.full_name,
+          imageUrl: driver.headshot_url,
+          color: team?.colour,
+        };
+      }),
+    [drivers, teams]
+  );
+
+  const teamOptions = useMemo<PickerOption[]>(
+    () =>
+      teams.map((team) => ({
+        key: team.id.toString(),
+        label: team.name,
+        imageUrl: team.car_image,
+        color: team.colour,
+      })),
+    [teams]
+  );
 
   const handleSubmit = async (event: EventsWithPredictionsConfig) => {
     setIsSaving(true);
@@ -206,10 +231,11 @@ export default function EventPredictionsForm({
       case 'DRIVER_UNIQUE':
       case 'DRIVER_MULTIPLE':
         return (
-          <Autocomplete
-            className='w-full'
-            variant='bordered'
-            size='sm'
+          <PredictionPicker
+            options={driverOptions}
+            title={prediction.prediction_name}
+            placeholder='Elegir piloto'
+            isDisabled={!isEventEnabled}
             selectedKey={
               formData
                 .find(
@@ -219,26 +245,18 @@ export default function EventPredictionsForm({
                 )
                 ?.driver_id?.toString() ?? null
             }
-            onSelectionChange={(key) =>
-              key && handleChange(prediction, eventId, key)
-            }
-            isDisabled={!isEventEnabled}
-          >
-            {drivers.map((driver) => (
-              <AutocompleteItem key={driver.id}>
-                {driver.full_name}
-              </AutocompleteItem>
-            ))}
-          </Autocomplete>
+            onSelect={(key) => handleChange(prediction, eventId, key)}
+          />
         );
 
       case 'TEAM_UNIQUE':
       case 'TEAM_MULTIPLE':
         return (
-          <Autocomplete
-            className='w-full'
-            variant='bordered'
-            size='sm'
+          <PredictionPicker
+            options={teamOptions}
+            title={prediction.prediction_name}
+            placeholder='Elegir equipo'
+            isDisabled={!isEventEnabled}
             selectedKey={
               formData
                 .find(
@@ -248,15 +266,8 @@ export default function EventPredictionsForm({
                 )
                 ?.team_id?.toString() ?? null
             }
-            onSelectionChange={(key) =>
-              key && handleChange(prediction, eventId, key)
-            }
-            isDisabled={!isEventEnabled}
-          >
-            {teams.map((team) => (
-              <AutocompleteItem key={team.id}>{team.name}</AutocompleteItem>
-            ))}
-          </Autocomplete>
+            onSelect={(key) => handleChange(prediction, eventId, key)}
+          />
         );
 
       case 'POSITION':

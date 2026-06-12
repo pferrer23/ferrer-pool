@@ -68,11 +68,18 @@ export default function Leaderboard() {
               {getPositionEmoji(item.position)}
             </span>
             <p className='text-4xl font-bold text-gray-50'>
-              {item.points}
-              {item.virtual_points > 0 && (
-                <span className='text-lg text-yellow-400 ml-2'>+{item.virtual_points}</span>
-              )}
+              {Number(item.points) + Number(item.virtual_points)}
             </p>
+          </div>
+          <div className='mt-3 flex flex-wrap gap-2'>
+            <span className='inline-flex items-center gap-1 rounded-full bg-background-800 px-2.5 py-1 text-xs font-medium text-gray-300'>
+              Eventos
+              <span className='font-bold text-gray-50'>{item.points}</span>
+            </span>
+            <span className='inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-2.5 py-1 text-xs font-medium text-yellow-400'>
+              Temporada
+              <span className='font-bold'>{item.virtual_points}</span>
+            </span>
           </div>
         </div>
       ))}
