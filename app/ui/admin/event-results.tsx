@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Select,
-  SelectItem,
   Input,
   Button,
   Card,
   CardBody,
   Spinner,
 } from '@heroui/react';
+import PredictionPicker, {
+  PickerOption,
+} from '@/app/ui/my-predictions/prediction-picker';
 import {
   EventPredictionsConfig,
   Driver,
@@ -48,6 +49,32 @@ export default function EventResultsForm() {
     };
     fectchData();
   }, []);
+
+  const driverOptions = useMemo<PickerOption[]>(
+    () =>
+      drivers.map((driver) => {
+        const team = teams.find((t) => t.id === driver.team_id);
+        return {
+          key: driver.id.toString(),
+          label: driver.name_acronym,
+          sublabel: driver.full_name,
+          imageUrl: driver.headshot_url,
+          color: team?.colour,
+        };
+      }),
+    [drivers, teams]
+  );
+
+  const teamOptions = useMemo<PickerOption[]>(
+    () =>
+      teams.map((team) => ({
+        key: team.id.toString(),
+        label: team.name,
+        imageUrl: team.car_image,
+        color: team.colour,
+      })),
+    [teams]
+  );
 
   const handleSubmit = async (e: React.FormEvent, eventId: number) => {
     e.preventDefault();
@@ -137,49 +164,43 @@ export default function EventResultsForm() {
       case 'DRIVER_UNIQUE':
       case 'DRIVER_MULTIPLE':
         return (
-          <Select
-            className='w-full'
-            variant='bordered'
-            size='sm'
-            selectedKeys={[
+          <PredictionPicker
+            options={driverOptions}
+            title={prediction.prediction_name}
+            placeholder='Elegir piloto'
+            searchOnDemand
+            selectedKey={
               formData
                 .find(
                   (p) =>
                     p.prediction_group_item_id === prediction.id &&
                     p.event_id === eventId
                 )
-                ?.driver_id?.toString() || '',
-            ]}
-            onChange={(e) => handleChange(eventId, prediction, e.target.value)}
-          >
-            {drivers.map((driver) => (
-              <SelectItem key={driver.id}>{driver.full_name}</SelectItem>
-            ))}
-          </Select>
+                ?.driver_id?.toString() ?? null
+            }
+            onSelect={(key) => handleChange(eventId, prediction, key)}
+          />
         );
 
       case 'TEAM_UNIQUE':
       case 'TEAM_MULTIPLE':
         return (
-          <Select
-            className='w-full'
-            variant='bordered'
-            size='sm'
-            selectedKeys={[
+          <PredictionPicker
+            options={teamOptions}
+            title={prediction.prediction_name}
+            placeholder='Elegir equipo'
+            searchOnDemand
+            selectedKey={
               formData
                 .find(
                   (p) =>
                     p.prediction_group_item_id === prediction.id &&
                     p.event_id === eventId
                 )
-                ?.team_id?.toString() || '',
-            ]}
-            onChange={(e) => handleChange(eventId, prediction, e.target.value)}
-          >
-            {teams.map((team) => (
-              <SelectItem key={team.id}>{team.name}</SelectItem>
-            ))}
-          </Select>
+                ?.team_id?.toString() ?? null
+            }
+            onSelect={(key) => handleChange(eventId, prediction, key)}
+          />
         );
 
       case 'POSITION':

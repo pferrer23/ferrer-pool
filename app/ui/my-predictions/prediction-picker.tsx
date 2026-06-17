@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import {
   Avatar,
+  Button,
   Input,
   Modal,
   ModalContent,
@@ -10,6 +11,7 @@ import {
   ModalBody,
   useDisclosure,
 } from '@heroui/react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export type PickerOption = {
   key: string;
@@ -26,6 +28,12 @@ interface PredictionPickerProps {
   isDisabled?: boolean;
   placeholder?: string;
   title?: string;
+  /**
+   * When true, the search field is hidden behind a search icon and only shown
+   * (and focused) when the user taps it. When false, the search field is always
+   * visible and autofocused on open.
+   */
+  searchOnDemand?: boolean;
 }
 
 export default function PredictionPicker({
@@ -35,9 +43,11 @@ export default function PredictionPicker({
   isDisabled = false,
   placeholder = 'Seleccionar',
   title = 'Seleccionar',
+  searchOnDemand = false,
 }: PredictionPickerProps) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [query, setQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   const selected = useMemo(
     () => options.find((o) => o.key === selectedKey) ?? null,
@@ -57,6 +67,7 @@ export default function PredictionPicker({
   const handleOpen = () => {
     if (isDisabled) return;
     setQuery('');
+    setShowSearch(false);
     onOpen();
   };
 
@@ -133,17 +144,38 @@ export default function PredictionPicker({
           {() => (
             <>
               <ModalHeader className='flex flex-col gap-3'>
-                <span>{title}</span>
-                <Input
-                  autoFocus
-                  variant='bordered'
-                  size='sm'
-                  placeholder='Buscar por nombre...'
-                  value={query}
-                  onValueChange={setQuery}
-                  isClearable
-                  onClear={() => setQuery('')}
-                />
+                <div className='flex items-center justify-between gap-2'>
+                  <span>{title}</span>
+                  {searchOnDemand && (
+                    <Button
+                      isIconOnly
+                      size='sm'
+                      variant={showSearch ? 'solid' : 'light'}
+                      color={showSearch ? 'primary' : 'default'}
+                      aria-label='Buscar'
+                      onPress={() => {
+                        setShowSearch((s) => {
+                          if (s) setQuery('');
+                          return !s;
+                        });
+                      }}
+                    >
+                      <MagnifyingGlassIcon className='h-5 w-5' />
+                    </Button>
+                  )}
+                </div>
+                {(!searchOnDemand || showSearch) && (
+                  <Input
+                    autoFocus
+                    variant='bordered'
+                    size='sm'
+                    placeholder='Buscar por nombre...'
+                    value={query}
+                    onValueChange={setQuery}
+                    isClearable
+                    onClear={() => setQuery('')}
+                  />
+                )}
               </ModalHeader>
               <ModalBody className='pb-6'>
                 {filtered.length === 0 ? (
